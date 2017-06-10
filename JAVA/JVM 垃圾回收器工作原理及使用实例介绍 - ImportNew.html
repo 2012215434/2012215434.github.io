@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://www.importnew.com/16325.html -->
+<html dir="ltr" lang="zh-CN" xmlns:wb="http://open.weibo.com/wb" class=" js rgba borderradius boxshadow textshadow opacity cssanimations cssgradients csstransitions fontface generatedcontent video audio js"><!--<![endif]--><!-- BEGIN head --><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shares.php" charset="utf-8"></script><div class="fit-vids-style">­<style>               .fluid-width-video-wrapper {                 width: 100%;                              position: relative;                       padding: 0;                            }                                                                                   .fluid-width-video-wrapper iframe,        .fluid-width-video-wrapper object,        .fluid-width-video-wrapper embed {           position: absolute;                       top: 0;                                   left: 0;                                  width: 100%;                              height: 100%;                          }                                       </style></div><script src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/id.php" charset="utf-8"></script>
+
+	<!-- Title -->
+	<title>JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew</title>
+	
+	<!-- Meta Tags -->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- Favicon & Mobileicon -->
+	<link rel="shortcut icon" href="http://www.importnew.com/wp-content/uploads/2014/12/d02a42d9cb3dec9320e5f550278911c7.ico">
+	<link rel="apple-touch-icon" href="http://www.importnew.com/wp-content/themes/jobbolev4blog/mobileicon.png">
+	
+	<!-- RSS, Atom & Pingbacks -->
+		<link rel="alternate" title="ImportNew RSS Feed" href="http://www.importnew.com/feed">
+		<link rel="alternate" title="RSS .92" href="http://www.importnew.com/feed/rss">
+	<link rel="alternate" title="Atom 0.3" href="http://www.importnew.com/feed/atom">
+	<link rel="pingback" href="http://www.importnew.com/xmlrpc.php">
+	
+	<!-- Theme Hook -->
+	<link rel="stylesheet" id="lightboxStyle-css" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/colorbox.css" type="text/css" media="screen">
+<link rel="stylesheet" id="core3.0-css" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shCore.css" type="text/css" media="all">
+<link rel="stylesheet" id="core-Default3.0-css" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shCoreDefault.css" type="text/css" media="all">
+<link rel="stylesheet" id="theme-Default3.0-css" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shThemeDefault.css" type="text/css" media="all">
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jquery.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/q2w3-fixed-widget.min.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/modernizr.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/comment-reply.js"></script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://www.importnew.com/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://www.importnew.com/wp-includes/wlwmanifest.xml"> 
+<link rel="prev" title="Infer：Facebook Java静态分析工具初探" href="http://www.importnew.com/16303.html">
+<link rel="next" title="JVM 优化经验总结" href="http://www.importnew.com/16327.html">
+<link rel="shortlink" href="http://www.importnew.com/?p=16325">
+
+<!-- All in One SEO Pack 1.6.15.2 by Michael Torbert of Semper Fi Web Design[465,526] -->
+<meta name="description" content="本文首先介绍了JVM各类垃圾回收器及其工作原理，接着通过实例演示它们的使用方式及需注意事项，最后总结了垃圾回收器的配置方式及参数意义。">
+<meta name="keywords" content="gc">
+<link rel="canonical" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew.html">
+<!-- /all in one seo pack -->
+
+<!-- Comment Rating plugin Version: 2.9.32 by Bob King, http://wealthynetizen.com/, dynamic comment voting & styling. --> 
+<style type="text/css" media="screen">
+   .ckrating_highly_rated {background-color:#FFFFCC !important;}
+   .ckrating_poorly_rated {opacity:0.6;filter:alpha(opacity=60) !important;}
+   .ckrating_hotly_debated {background-color:#FFF0F5 !important;}
+</style>
+
+
+<!-- WP SyntaxHighlighter Ver.1.7.3 CSS for code Begin -->
+<style type="text/css">
+.syntaxhighlighter,
+.syntaxhighlighter a,
+.syntaxhighlighter div,
+.syntaxhighlighter code,
+.syntaxhighlighter table,
+.syntaxhighlighter table td,
+.syntaxhighlighter table tr,
+.syntaxhighlighter table tbody,
+.syntaxhighlighter table thead,
+.syntaxhighlighter table caption,
+.syntaxhighlighter textarea {
+font-size: 12px !important; /* Set the font size in pixels */  
+font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important; /* Set the font type */  
+}
+.syntaxhighlighter table caption {
+/* For Title(Caption) */  
+font-size: 14px !important; /* Set the font size in pixels */  
+font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important; /* Set the font type */  
+}
+.syntaxhighlighter.nogutter td.code .line {
+/* Set the left padding space when no-gutter in ver. 3.0 */  
+padding-left: 3px !important;
+}
+.syntaxhighlighter {
+/* For Chrome/Safari(WebKit) */  
+/* Hide the superfluous vertical scrollbar in ver. 3.0 */  
+overflow-y: hidden !important;
+padding: 1px !important;
+}
+.widget-area.syntaxhighlighter a,
+.widget-area.syntaxhighlighter div,
+.widget-area.syntaxhighlighter code,
+.widget-area.syntaxhighlighter table,
+.widget-area.syntaxhighlighter table td,
+.widget-area.syntaxhighlighter table tr,
+.widget-area.syntaxhighlighter table tbody,
+.widget-area.syntaxhighlighter table thead,
+.widget-area.syntaxhighlighter table caption,
+.widget-area.syntaxhighlighter textarea {
+/* For Widget */  
+font-size: 14px !important; /* Set the font size in pixels */  
+font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important; /* Set the font type */  
+}
+.widget-area table caption {
+/* For Widget */  
+/* For Title(Caption) */  
+font-size: 10px !important; /* Set the font size in pixels */  
+font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important; /* Set the font type */  
+}
+</style>
+<!-- WP SyntaxHighlighter Ver.1.7.3 CSS for code End -->
+	
+	<!-- CSS -->
+	<link rel="stylesheet" href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/style.css" media="screen">
+	<!-- link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noticia+Text:400,700italic,700,400italic" media="screen" / -->
+	<style>
+				*::selection { background: #0099cc; }
+		*::-moz-selection { background: #0099cc; }
+		body { background: #ffffff  }
+		a, .tabs ul.nav li a:hover, .tabs ul.nav li.active a, .dropcap, .toggle.hover .toggle-title, li.comment cite a:hover, h3.widget-title, .post-meta .meta-title:hover, .the-latest a:hover h4, .aw_socialcounter_widget li a:hover, .aw_tabbed_widget #tab-latest-comments a:hover { color: #0099cc; }
+		a:hover { color: #b30000; }
+		input:focus, textarea:focus { border-color: #0099cc; }
+		#searchsubmit, .highlight, .aw_tabbed_widget .tabs ul.nav li.active a, footer .aw_tabbed_widget .tabs ul.nav li.active a, #top .aw_tabbed_widget .tabs ul.nav li.active a, .aw_tabbed_widget .tabs ul.nav li a:hover, footer .aw_tabbed_widget .tabs ul.nav li a:hover, #top .aw_tabbed_widget .tabs ul.nav li a:hover, .aw_twitter_widget .twitter-icon, .testimonial-icon, #top-closed:hover, .flex-control-nav a:hover, .flex-control-nav a.flex-active { background-color: #0099cc; }
+		.submit { background-color: #0099cc; border-color: #007399; }
+		.submit:hover { background-color: #b30000; border-color: #860000; }
+		#searchsubmit:hover { background-color: #b30000; }
+		.toggle.hover .toggle-icon { border-top-color: #0099cc; }
+		.toggle.hover.active .toggle-icon { border-bottom-color: #0099cc; }
+		.flex-direction-nav li .flex-prev:hover { border-right-color: #0099cc; }
+		.flex-direction-nav li .flex-next:hover { border-left-color: #0099cc; }
+		@media only screen and (min-width: 768px) and (max-width: 959px) {
+			.aw_tabbed_widget .tabs ul.nav li a:hover, .tabs ul.nav li.active a { color: #0099cc; }
+		}
+		@media screen and (max-width: 767px) {
+			.tabs ul.nav li a:hover, .tabs ul.nav li.active a { color: #0099cc; }
+		}
+	</style>
+		
+	<!--[if IE 8]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <![endif]-->
+
+	<!-- Links: RSS + Atom Syndication + Pingback etc. -->
+	<link rel="alternate" type="application/rss+xml" title="ImportNew RSS Feed" href="http://www.importnew.com/feed">
+	<link rel="alternate" type="text/xml" title="RSS .92" href="http://www.importnew.com/feed/rss">
+	<link rel="alternate" type="application/atom+xml" title="Atom 0.3" href="http://www.importnew.com/feed/atom">
+	<link rel="pingback" href="http://www.importnew.com/xmlrpc.php">
+    <script src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/wb.js" type="text/javascript" charset="utf-8"></script><script charset="UTF-8" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/query"></script>
+
+<!-- END head -->
+<script charset="UTF-8" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/bundle.js"></script><script charset="UTF-8" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/iframeWidget.js"></script></head>
+
+<!-- BEGIN body -->
+<body class="single single-post postid-16325 single-format-standard chrome"><iframe id="sina_anywhere_iframe" style="display: none;"></iframe><link href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jiathis_counter.css" rel="stylesheet" type="text/css"><link href="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jiathis_share.css" rel="stylesheet" type="text/css"><iframe frameborder="0" style="position: absolute; display: none; opacity: 0;"></iframe><div class="jiathis_style" style="position: absolute; z-index: 1000000000; display: none; top: 50%; left: 50%; overflow: auto;"></div><div class="jiathis_style" style="position: absolute; z-index: 1000000000; display: none; overflow: auto;"></div><iframe frameborder="0" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jiathis_utility.html" style="display: none;"></iframe>
+
+		
+	
+	<!-- BEGIN #top-nav -->
+	<nav id="top-nav" class="menu-nav">
+		
+		<!-- BEGIN .container -->
+		<div class="container">
+
+			            <div class="grid-12">
+            </div>
+			<div class="clear"></div>
+		
+		</div>
+		<!-- END .container -->
+    
+	</nav>
+	<!-- END #top-nav -->
+	
+	  	
+	<!-- BEGIN #wrapper -->
+	<div id="wrapper" class="container">
+
+		<!-- BEGIN header -->
+		<header>
+		
+						
+			<div class="header-wrapper">
+								
+				<!-- BEGIN #logo -->
+				<div id="logo" class="leaderboard-true">
+				
+										<a href="http://www.importnew.com/"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/6c537425c9ad078efe656a346e5facec.png" width="137" height="85" alt="ImportNew"></a>
+									
+				</div>
+				<!-- END #logo -->
+				
+				<!-- BEGIN #leaderboard -->
+				<div id="leaderboard">
+				
+					<a href="http://blog.jobbole.com/84342/?utm_source=www.importnew.com&utm_medium=topBanner&utm_content=2015.9.16" target="_blank" class="external" rel="nofollow"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/b0085a0786dd01f1ca103360df302b6f.jpg"></a>				
+				</div>
+				<!-- END #leaderboard -->
+				
+				<div class="clear"></div>
+			
+			</div>
+			
+						
+			<div class="clear"></div>
+			
+			<!-- BEGIN #main-nav -->
+			<nav id="main-nav" class="grid-12 menu-nav">
+
+				<div class="menu-main-container"><ul id="main-nav-menu" class="menu sf-js-enabled"><li id="menu-item-14265" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14265"><a href="http://www.importnew.com/">首页</a></li>
+<li id="menu-item-14278" class="menu-item menu-item-type-post_type menu-item-object-page current_page_parent menu-item-14278"><a href="http://www.importnew.com/all-posts">所有文章</a></li>
+<li id="menu-item-858" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-858"><a href="http://www.importnew.com/cat/news">资讯</a></li>
+<li id="menu-item-1120" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1120"><a href="http://www.importnew.com/cat/web-development">Web</a></li>
+<li id="menu-item-1923" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1923"><a href="http://www.importnew.com/cat/architecture">架构</a></li>
+<li id="menu-item-832" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-832"><a href="http://www.importnew.com/cat/basic">基础技术</a></li>
+<li id="menu-item-836" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-836"><a href="http://www.importnew.com/cat/books">书籍</a></li>
+<li id="menu-item-2183" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2183"><a href="http://www.importnew.com/cat/tutorial">教程</a></li>
+<li id="menu-item-14282" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14282"><a href="http://top.jobbole.com/" class="external" rel="nofollow" target="_blank">我要投稿</a></li>
+<li id="menu-item-14283" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14283"><a href="http://www.importnew.com/16325.html#">更多频道 »</a>
+<ul class="sub-menu sf-js-enabled" style="display: none; visibility: hidden;">
+	<li id="menu-item-14284" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14284"><a href="http://ios.jobbole.com/" class="external" rel="nofollow" target="_blank">iOS</a></li>
+	<li id="menu-item-14286" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14286"><a href="http://python.jobbole.com/" class="external" rel="nofollow" target="_blank">Python</a></li>
+	<li id="menu-item-14285" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14285"><a href="http://android.jobbole.com/" class="external" rel="nofollow" target="_blank">Android</a></li>
+	<li id="menu-item-14287" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14287"><a href="http://web.jobbole.com/" class="external" rel="nofollow" target="_blank">Web前端</a></li>
+</ul>
+</li>
+</ul><select class="selectnav" id="selectnav1"><option value="">- 导航条 -</option><option value="http://www.importnew.com/">首页</option><option value="http://www.importnew.com/all-posts">所有文章</option><option value="http://www.importnew.com/cat/news">资讯</option><option value="http://www.importnew.com/cat/web-development">Web</option><option value="http://www.importnew.com/cat/architecture">架构</option><option value="http://www.importnew.com/cat/basic">基础技术</option><option value="http://www.importnew.com/cat/books">书籍</option><option value="http://www.importnew.com/cat/tutorial">教程</option><option value="http://top.jobbole.com/">我要投稿</option><option value="http://www.importnew.com/16325.html#">更多频道 »</option><option value="http://ios.jobbole.com/">- iOS</option><option value="http://python.jobbole.com/">- Python</option><option value="http://android.jobbole.com/">- Android</option><option value="http://web.jobbole.com/">- Web前端</option></select></div>				
+				<div class="clear"></div>
+            
+			</nav>
+			<!-- END #main-nav -->
+			
+			<div class="clear"></div>
+		
+		</header>
+		<!-- END header -->
+		
+		
+
+<!-- BEGIN .grid-8 -->
+<div class="grid-8">
+
+		
+	<!-- BEGIN .post -->
+<div class="post-16325 post type-post status-publish format-standard hentry category-basic tag-gc odd" id="post-16325">
+	
+	<!-- BEGIN .entry-header -->
+	<div class="entry-header">
+	
+				
+		<h1>JVM 垃圾回收器工作原理及使用实例介绍</h1>
+		
+							
+	</div>
+	<!-- BEGIN .entry-header -->
+	
+	<!-- BEGIN .entry-meta -->
+	<div class="entry-meta">
+	
+		<p class="entry-meta-hide-on-mobile">2015/07/17 | 分类： <a href="http://www.importnew.com/cat/basic" title="查看 基础技术 中的全部文章" rel="category tag">基础技术</a> | <a href="http://www.importnew.com/16325.html#comments" title="《JVM 垃圾回收器工作原理及使用实例介绍》上的评论">1 条评论</a>
+
+		 | 标签： <a href="http://www.importnew.com/tag/gc">GC</a></p>
+<!-- JiaThis Button BEGIN -->
+<div class="jiathis_style" style="display: block; margin: 0 0px; clear: both;"><span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_tsina" title="分享到新浪微博"><span class="jiathis_txt jtico jtico_tsina"></span></a>
+<a class="jiathis_button_weixin" title="分享到微信"><span class="jiathis_txt jtico jtico_weixin"></span></a>
+<a class="jiathis_button_qzone" title="分享到QQ空间"><span class="jiathis_txt jtico jtico_qzone"></span></a>
+<a class="jiathis_button_fb" title="分享到Facebook"><span class="jiathis_txt jtico jtico_fb"></span></a>
+<a class="jiathis_button_renren" title="分享到人人网"><span class="jiathis_txt jtico jtico_renren"></span></a>
+<a class="jiathis_button_douban" title="分享到豆瓣"><span class="jiathis_txt jtico jtico_douban"></span></a>
+<a class="jiathis_button_readitlater"></a>
+<a class="jiathis_button_evernote" title="分享到EverNote"><span class="jiathis_txt jtico jtico_evernote"></span></a>
+<a class="jiathis_button_ydnote" title="分享到有道云笔记"><span class="jiathis_txt jtico jtico_ydnote"></span></a>
+<a href="http://www.jiathis.com/share?uid=1745061" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+<a class="jiathis_counter_style"><span class="jiathis_button_expanded jiathis_counter jiathis_bubble_style" id="jiathis_counter_30" title="累计分享6次">6</span></a>
+</div>
+<!-- JiaThis Button END -->
+
+
+	</div>
+	<!-- END .entry-meta -->
+
+	<!-- BEGIN .entry -->
+	<div class="entry">
+
+        
+		<div class="copyright-area">原文出处： <a ref="nofollow" target="_blank" href="https://www.ibm.com/developerworks/cn/java/j-lo-JVMGarbageCollection/">周 明耀</a></div>
+<h2 id="1. 垃圾收集基础|outline">垃圾收集基础</h2>
+<p>Java 语言的一大特点就是可以进行自动垃圾回收处理，而无需开发人员过于关注系统资源，例如内存资源的释放情况。自动垃圾收集虽然大大减轻了开发人员的工作量，但是也增加了软件系统的负担。</p>
+<p>拥有垃圾收集器可以说是 Java 语言与 C++语言的一项显著区别。在 C++语言中，程序员必须小心谨慎地处理每一项内存分配，且内存使用完后必须手工释放曾经占用的内存空间。当内存释放不够完全时，即存在分配但永不释放的内存块，就会引起内存泄漏，严重时甚至导致程序瘫痪。</p>
+<p>以下列举了垃圾回收器常用的算法及实验原理：</p>
+<ul>
+<li>引用计数法 (Reference Counting)</li>
+</ul>
+<p>引用计数器在微软的 COM 组件技术中、Adobe 的 ActionScript3 种都有使用。</p>
+<p>引用计数器的实现很简单，对于一个对象 A，只要有任何一个对象引用了 A，则 A 的引用计数器就加 1，当引用失效时，引用计数器就减 1。只要对象 A 的引用计数器的值为 0，则对象 A 就不可能再被使用。</p>
+<p>引用计数器的实现也非常简单，只需要为每个对象配置一个整形的计数器即可。但是引用计数器有一个严重的问题，即无法处理循环引用的情况。因此，在 Java 的垃圾回收器中没有使用这种算法。</p>
+<p>一个简单的循环引用问题描述如下：有对象 A 和对象 B，对象 A 中含有对象 B 的引用，对象 B 中含有对象 A 的引用。此时，对象 A 和对象 B 的引用计数器都不为 0。但是在系统中却不存在任何第 3 个对象引用了 A 或 B。也就是说，A 和 B 是应该被回收的垃圾对象，但由于垃圾对象间相互引用，从而使垃圾回收器无法识别，引起内存泄漏。</p>
+<ul>
+<li>标记-清除算法 (Mark-Sweep)</li>
+</ul>
+<p>标记-清除算法将垃圾回收分为两个阶段：标记阶段和清除阶段。一种可行的实现是，在标记阶段首先通过根节点，标记所有从根节点开始的较大对象。因此，未被标记的对象就是未被引用的垃圾对象。然后，在清除阶段，清除所有未被标记的对象。该算法最大的问题是存在大量的空间碎片，因为回收后的空间是不连续的。在对象的堆空间分配过程中，尤其是大对象的内存分配，不连续的内存空间的工作效率要低于连续的空间。</p>
+<ul>
+<li>复制算法 (Copying)</li>
+</ul>
+<p>将现有的内存空间分为两快，每次只使用其中一块，在垃圾回收时将正在使用的内存中的存活对象复制到未被使用的内存块中，之后，清除正在使用的内存块中的所有对象，交换两个内存的角色，完成垃圾回收。</p>
+<p>如果系统中的垃圾对象很多，复制算法需要复制的存活对象数量并不会太大。因此在真正需要垃圾回收的时刻，复制算法的效率是很高的。又由于对象在垃圾回收过程中统一被复制到新的内存空间中，因此，可确保回收后的内存空间是没有碎片的。该算法的缺点是将系统内存折半。</p>
+<p>Java 的新生代串行垃圾回收器中使用了复制算法的思想。新生代分为 eden 空间、from 空间、to 空间 3 个部分。其中 from 空间和 to 空间可以视为用于复制的两块大小相同、地位相等，且可进行角色互换的空间块。from 和 to 空间也称为 survivor 空间，即幸存者空间，用于存放未被回收的对象。</p>
+<p>在垃圾回收时，eden 空间中的存活对象会被复制到未使用的 survivor 空间中 (假设是 to)，正在使用的 survivor 空间 (假设是 from) 中的年轻对象也会被复制到 to 空间中 (大对象，或者老年对象会直接进入老年带，如果 to 空间已满，则对象也会直接进入老年代)。此时，eden 空间和 from 空间中的剩余对象就是垃圾对象，可以直接清空，to 空间则存放此次回收后的存活对象。这种改进的复制算法既保证了空间的连续性，又避免了大量的内存空间浪费。</p>
+<ul>
+<li>标记-压缩算法 (Mark-Compact)</li>
+</ul>
+<p>复制算法的高效性是建立在存活对象少、垃圾对象多的前提下的。这种情况在年轻代经常发生，但是在老年代更常见的情况是大部分对象都是存活对象。如果依然使用复制算法，由于存活的对象较多，复制的成本也将很高。</p>
+<p>标记-压缩算法是一种老年代的回收算法，它在标记-清除算法的基础上做了一些优化。也首先需要从根节点开始对所有可达对象做一次标记，但之后，它并不简单地清理未标记的对象，而是将所有的存活对象压缩到内存的一端。之后，清理边界外所有的空间。这种方法既避免了碎片的产生，又不需要两块相同的内存空间，因此，其性价比比较高。</p>
+<ul>
+<li>增量算法 (Incremental Collecting)</li>
+</ul>
+<p>在垃圾回收过程中，应用软件将处于一种 CPU 消耗很高的状态。在这种 CPU 消耗很高的状态下，应用程序所有的线程都会挂起，暂停一切正常的工作，等待垃圾回收的完成。如果垃圾回收时间过长，应用程序会被挂起很久，将严重影响用户体验或者系统的稳定性。</p>
+<p>增量算法的基本思想是，如果一次性将所有的垃圾进行处理，需要造成系统长时间的停顿，那么就可以让垃圾收集线程和应用程序线程交替执行。每次，垃圾收集线程只收集一小片区域的内存空间，接着切换到应用程序线程。依次反复，直到垃圾收集完成。使用这种方式，由于在垃圾回收过程中，间断性地还执行了应用程序代码，所以能减少系统的停顿时间。但是，因为线程切换和上下文转换的消耗，会使得垃圾回收的总体成本上升，造成系统吞吐量的下降。</p>
+<ul>
+<li>分代 (Generational Collecting)</li>
+</ul>
+<p>根据垃圾回收对象的特性，不同阶段最优的方式是使用合适的算法用于本阶段的垃圾回收，分代算法即是基于这种思想，它将内存区间根据对象的特点分成几块，根据每块内存区间的特点，使用不同的回收算法，以提高垃圾回收的效率。以 Hot Spot 虚拟机为例，它将所有的新建对象都放入称为年轻代的内存区域，年轻代的特点是对象会很快回收，因此，在年轻代就选择效率较高的复制算法。当一个对象经过几次回收后依然存活，对象就会被放入称为老生代的内存空间。在老生代中，几乎所有的对象都是经过几次垃圾回收后依然得以幸存的。因此，可以认为这些对象在一段时期内，甚至在应用程序的整个生命周期中，将是常驻内存的。如果依然使用复制算法回收老生代，将需要复制大量对象。再加上老生代的回收性价比也要低于新生代，因此这种做法也是不可取的。根据分代的思想，可以对老年代的回收使用与新生代不同的标记-压缩算法，以提高垃圾回收效率。</p>
+<p>从不同角度分析垃圾收集器，可以将其分为不同的类型。</p>
+<p>1. 按线程数分，可以分为串行垃圾回收器和并行垃圾回收器。串行垃圾回收器一次只使用一个线程进行垃圾回收；并行垃圾回收器一次将开启多个线程同时进行垃圾回收。在并行能力较强的 CPU 上，使用并行垃圾回收器可以缩短 GC 的停顿时间。</p>
+<p>2. 按照工作模式分，可以分为并发式垃圾回收器和独占式垃圾回收器。并发式垃圾回收器与应用程序线程交替工作，以尽可能减少应用程序的停顿时间；独占式垃圾回收器 (Stop the world) 一旦运行，就停止应用程序中的其他所有线程，直到垃圾回收过程完全结束。</p>
+<p>3. 按碎片处理方式可分为压缩式垃圾回收器和非压缩式垃圾回收器。压缩式垃圾回收器会在回收完成后，对存活对象进行压缩整理，消除回收后的碎片；非压缩式的垃圾回收器不进行这步操作。</p>
+<p>4. 按工作的内存区间，又可分为新生代垃圾回收器和老年代垃圾回收器。</p>
+<p>可以用以下指标评价一个垃圾处理器的好坏。</p>
+<p>吞吐量：指在应用程序的生命周期内，应用程序所花费的时间和系统总运行时间的比值。系统总运行时间=应用程序耗时+GC 耗时。如果系统运行了 100min，GC 耗时 1min，那么系统的吞吐量就是 (100-1)/100=99%。</p>
+<p>垃圾回收器负载：和吞吐量相反，垃圾回收器负载指来记回收器耗时与系统运行总时间的比值。</p>
+<p>停顿时间：指垃圾回收器正在运行时，应用程序的暂停时间。对于独占回收器而言，停顿时间可能会比较长。使用并发的回收器时，由于垃圾回收器和应用程序交替运行，程序的停顿时间会变短，但是，由于其效率很可能不如独占垃圾回收器，故系统的吞吐量可能会较低。</p>
+<p>垃圾回收频率：指垃圾回收器多长时间会运行一次。一般来说，对于固定的应用而言，垃圾回收器的频率应该是越低越好。通常增大堆空间可以有效降低垃圾回收发生的频率，但是可能会增加回收产生的停顿时间。</p>
+<p>反应时间：指当一个对象被称为垃圾后多长时间内，它所占据的内存空间会被释放。</p>
+<p>堆分配：不同的垃圾回收器对堆内存的分配方式可能是不同的。一个良好的垃圾收集器应该有一个合理的堆内存区间划分。</p>
+<h2 id="2.JVM 垃圾回收器分类|outline">JVM 垃圾回收器分类</h2>
+<ul>
+<li>新生代串行收集器</li>
+</ul>
+<p>串行收集器主要有两个特点：第一，它仅仅使用单线程进行垃圾回收；第二，它独占式的垃圾回收。</p>
+<p>在串行收集器进行垃圾回收时，Java 应用程序中的线程都需要暂停，等待垃圾回收的完成，这样给用户体验造成较差效果。虽然如此，串行收集器却是一个成熟、经过长时间生产环境考验的极为高效的收集器。新生代串行处理器使用复制算法，实现相对简单，逻辑处理特别高效，且没有线程切换的开销。在诸如单 CPU 处理器或者较小的应用内存等硬件平台不是特别优越的场合，它的性能表现可以超过并行回收器和并发回收器。在 HotSpot 虚拟机中，使用-XX：+UseSerialGC 参数可以指定使用新生代串行收集器和老年代串行收集器。当 JVM 在 Client 模式下运行时，它是默认的垃圾收集器。一次新生代串行收集器的工作输出日志类似如清单 1 信息 (使用-XX:+PrintGCDetails 开关) 所示。</p>
+<h5 id="2.0.1. 清单 1. 一次新生代串行收集器的工作输出日志|outline">清单 1. 一次新生代串行收集器的工作输出日志</h5>
+<div><div id="highlighter_370138" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [DefNew: 3468K-&gt;150K(9216K), </code><code class="actionscript3 value">0.0028638</code> <code class="actionscript3 plain">secs][Tenured:</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 plain">1562K-&gt;1712K(10240K), </code><code class="actionscript3 value">0.0084220</code> <code class="actionscript3 plain">secs] 3468K-&gt;1712K(19456K),</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 plain">[Perm : 377K-&gt;377K(12288K)],</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 value">0.0113816</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.02</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.01</code> <code class="actionscript3 plain">secs]</code></div></div></td></tr></tbody></table></div></div>
+<p>它显示了一次垃圾回收前的新生代的内存占用量和垃圾回收后的新生代内存占用量，以及垃圾回收所消耗的时间。</p>
+<ul>
+<li>老年代串行收集器</li>
+</ul>
+<p>老年代串行收集器使用的是标记-压缩算法。和新生代串行收集器一样，它也是一个串行的、独占式的垃圾回收器。由于老年代垃圾回收通常会使用比新生代垃圾回收更长的时间，因此，在堆空间较大的应用程序中，一旦老年代串行收集器启动，应用程序很可能会因此停顿几秒甚至更长时间。虽然如此，老年代串行回收器可以和多种新生代回收器配合使用，同时它也可以作为 CMS 回收器的备用回收器。若要启用老年代串行回收器，可以尝试使用以下参数：-XX:+UseSerialGC: 新生代、老年代都使用串行回收器。</p>
+<h5 id="2.0.2. 清单 2. 一次老年代串行收集器的工作输出日志|outline">清单 2. 一次老年代串行收集器的工作输出日志</h5>
+<div><div id="highlighter_753932" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">def </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 4928K, used 1373K [</code><code class="actionscript3 value">0x27010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">)</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4416K, </code><code class="actionscript3 value">31</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x27010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27167628</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27460000</code><code class="actionscript3 plain">)</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x27460000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27460000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x274e0000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x274e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x274e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27560000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">tenured generation total 10944K, used 0K [</code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2d010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 10944K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2c560200</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2d010000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">compacting perm gen total 12288K, used 376K [</code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37c10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b010000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 12288K, </code><code class="actionscript3 value">3</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3706e0b8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3706e200</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37c10000</code><code class="actionscript3 plain">)</code></div><div class="line number10 index9 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">ro space 10240K, </code><code class="actionscript3 value">51</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x3b010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b543000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b543000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3ba10000</code><code class="actionscript3 plain">)</code></div><div class="line number11 index10 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">rw space 12288K, </code><code class="actionscript3 value">55</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x3ba10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c0ae4f8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c0ae600</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c610000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<p>如果使用-XX:+UseParNewGC 参数设置，表示新生代使用并行收集器，老年代使用串行收集器，如清单 3 所示。</p>
+<h5 id="2.0.3. 清单 3. 一次串并行收集器混合使用的工作输出日志|outline">清单 3. 一次串并行收集器混合使用的工作输出日志</h5>
+<div><div id="highlighter_306636" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">par </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 4928K, used 1373K [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">)</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4416K, </code><code class="actionscript3 value">31</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f167620</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f460000</code><code class="actionscript3 plain">)</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f460000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f460000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f4e0000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f4e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f4e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f560000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">tenured generation total 10944K, used 0K [</code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x15010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 10944K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14560200</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x15010000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">compacting perm gen total 12288K, used 2056K [</code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1fc10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x23010000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 12288K, </code><code class="actionscript3 value">16</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f2121d0</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f212200</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1fc10000</code><code class="actionscript3 plain">)</code></div><div class="line number10 index9 alt1"><code class="actionscript3 plain">No shared spaces configured.</code></div></div></td></tr></tbody></table></div></div>
+<p>如果使用-XX:+UseParallelGC 参数设置，表示新生代和老年代均使用并行回收收集器。如清单 4 所示。</p>
+<h5 id="2.0.4. 清单 4. 一次老年代并行回收器的工作输出日志|outline">清单 4. 一次老年代并行回收器的工作输出日志</h5>
+<div><div id="highlighter_662774" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[Full GC [Tenured: 1712K-&gt;1699K(10240K), </code><code class="actionscript3 value">0.0071963</code> <code class="actionscript3 plain">secs] 1712K-&gt;1699K(19456K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="actionscript3 plain">[Perm : 377K-&gt;372K(12288K)], </code><code class="actionscript3 value">0.0072393</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.00</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">,</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="actionscript3 plain">real=</code><code class="actionscript3 value">0.01</code> <code class="actionscript3 plain">secs]</code></div></div></td></tr></tbody></table></div></div>
+<p>它显示了垃圾回收前老年代和永久区的内存占用量，以及垃圾回收后老年代和永久区的内存使用量。</p>
+<ul>
+<li>并行收集器</li>
+</ul>
+<p>并行收集器是工作在新生代的垃圾收集器，它只简单地将串行回收器多线程化。它的回收策略、算法以及参数和串行回收器一样。</p>
+<p>并行回收器也是独占式的回收器，在收集过程中，应用程序会全部暂停。但由于并行回收器使用多线程进行垃圾回收，因此，在并发能力比较强的 CPU 上，它产生的停顿时间要短于串行回收器，而在单 CPU 或者并发能力较弱的系统中，并行回收器的效果不会比串行回收器好，由于多线程的压力，它的实际表现很可能比串行回收器差。</p>
+<p>开启并行回收器可以使用参数-XX:+UseParNewGC，该参数设置新生代使用并行收集器，老年代使用串行收集器。</p>
+<h5 id="2.0.5. 清单 5. 设置参数-XX:+UseParNewGC 的输出日志|outline">清单 5. 设置参数-XX:+UseParNewGC 的输出日志</h5>
+<div><div id="highlighter_746375" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [ParNew: 825K-&gt;161K(4928K), </code><code class="actionscript3 value">0.0155258</code> <code class="actionscript3 plain">secs][Tenured: 8704K-&gt;661K(10944K), </code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 value">0.0071964</code> <code class="actionscript3 plain">secs] 9017K-&gt;661K(15872K), </code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 plain">[Perm : 2049K-&gt;2049K(12288K)], </code><code class="actionscript3 value">0.0228090</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.01</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.01</code> <code class="actionscript3 plain">secs] </code></div><div class="line number4 index3 alt1"><code class="actionscript3 plain">Heap</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">par </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 4992K, used 179K [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f570000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4480K, </code><code class="actionscript3 value">4</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f03cda8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f470000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f470000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f470000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f4f0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f4f0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f4f0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0f570000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">tenured generation total 10944K, used 8853K [</code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x15010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">)</code></div><div class="line number10 index9 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 10944K, </code><code class="actionscript3 value">80</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x14560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14e057c0</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x14e05800</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x15010000</code><code class="actionscript3 plain">)</code></div><div class="line number11 index10 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">compacting perm gen total 12288K, used 2060K [</code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1fc10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x23010000</code><code class="actionscript3 plain">)</code></div><div class="line number12 index11 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 12288K, </code><code class="actionscript3 value">16</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f213228</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1f213400</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1fc10000</code><code class="actionscript3 plain">)</code></div><div class="line number13 index12 alt2"><code class="actionscript3 plain">No shared spaces configured.</code></div></div></td></tr></tbody></table></div></div>
+<p>设置参数-XX:+UseConcMarkSweepGC 可以要求新生代使用并行收集器，老年代使用 CMS。</p>
+<h5 id="2.0.6. 清单 6. 设置参数-XX:+UseConcMarkSweepGC 的输出日志|outline">清单 6. 设置参数-XX:+UseConcMarkSweepGC 的输出日志</h5>
+<div><div id="highlighter_204728" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [ParNew: 8967K-&gt;669K(14784K), </code><code class="actionscript3 value">0.0040895</code> <code class="actionscript3 plain">secs] 8967K-&gt;669K(63936K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 value">0.0043255</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.00</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.00</code> <code class="actionscript3 plain">secs] </code></div><div class="line number3 index2 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">par </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 14784K, used 9389K [</code><code class="actionscript3 value">0x03f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 13184K, </code><code class="actionscript3 value">66</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x03f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x047d3e58</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04c30000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 1600K, </code><code class="actionscript3 value">41</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x04dc0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04e67738</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 1600K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x04c30000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04c30000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04dc0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">concurrent mark-sweep generation total 49152K, used 0K [</code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x07f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x09f50000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">concurrent-mark-sweep perm gen total 12288K, used 2060K [</code><code class="actionscript3 value">0x09f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0ab50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0df50000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<p>并行收集器工作时的线程数量可以使用-XX:ParallelGCThreads 参数指定。一般，最好与 CPU 数量相当，避免过多的线程数影响垃圾收集性能。在默认情况下，当 CPU 数量小于 8 个，ParallelGCThreads 的值等于 CPU 数量，大于 8 个，ParallelGCThreads 的值等于 3+[5*CPU_Count]/8]。以下测试显示了笔者笔记本上运行 8 个线程时耗时最短，本人笔记本是 8 核 IntelCPU。</p>
+<h5 id="2.0.7. 清单 7. 设置为 8 个线程后 GC 输出|outline">清单 7. 设置为 8 个线程后 GC 输出</h5>
+<div><div id="highlighter_436265" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [ParNew: 8967K-&gt;676K(14784K), </code><code class="actionscript3 value">0.0036983</code> <code class="actionscript3 plain">secs] 8967K-&gt;676K(63936K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 value">0.0037662</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.00</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.00</code> <code class="actionscript3 plain">secs] </code></div><div class="line number3 index2 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">par </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 14784K, used 9395K [</code><code class="actionscript3 value">0x040e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x050e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x050e0000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 13184K, </code><code class="actionscript3 value">66</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x040e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04963e58</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04dc0000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 1600K, </code><code class="actionscript3 value">42</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04ff9100</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x050e0000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 1600K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x04dc0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04dc0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x04f50000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">concurrent mark-sweep generation total 49152K, used 0K [</code><code class="actionscript3 value">0x050e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x080e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0a0e0000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">concurrent-mark-sweep perm gen total 12288K, used 2060K [</code><code class="actionscript3 value">0x0a0e0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0ace0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0e0e0000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<h5 id="2.0.8. 清单 8. 设置为 128 个线程后 GC 输出|outline">清单 8. 设置为 128 个线程后 GC 输出</h5>
+<div><div id="highlighter_896934" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [ParNew: 8967K-&gt;664K(14784K), </code><code class="actionscript3 value">0.0207327</code> <code class="actionscript3 plain">secs] 8967K-&gt;664K(63936K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 value">0.0208077</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.03</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.00</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.02</code> <code class="actionscript3 plain">secs]</code></div></div></td></tr></tbody></table></div></div>
+<h5 id="2.0.9. 清单 9. 设置为 640 个线程后 GC 输出|outline">清单 9. 设置为 640 个线程后 GC 输出</h5>
+<div><div id="highlighter_711659" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [ParNew: 8967K-&gt;667K(14784K), </code><code class="actionscript3 value">0.2323704</code> <code class="actionscript3 plain">secs] 8967K-&gt;667K(63936K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 value">0.2324778</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.34</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.02</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.23</code> <code class="actionscript3 plain">secs]</code></div></div></td></tr></tbody></table></div></div>
+<h5 id="2.0.10. 清单 10. 设置为 1280 个线程后 GC 输出|outline">清单 10. 设置为 1280 个线程后 GC 输出</h5>
+<div><div id="highlighter_380328" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Error occurred during initialization of VM</code></div><div class="line number2 index1 alt1"><code class="actionscript3 plain">Too small </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">size specified</code></div></div></td></tr></tbody></table></div></div>
+<ul>
+<li>新生代并行回收 (Parallel Scavenge) 收集器</li>
+</ul>
+<p>新生代并行回收收集器也是使用复制算法的收集器。从表面上看，它和并行收集器一样都是多线程、独占式的收集器。但是，并行回收收集器有一个重要的特点：它非常关注系统的吞吐量。</p>
+<p>新生代并行回收收集器可以使用以下参数启用：</p>
+<p>-XX:+UseParallelGC:新生代使用并行回收收集器，老年代使用串行收集器。</p>
+<p>-XX:+UseParallelOldGC:新生代和老年代都是用并行回收收集器。</p>
+<h5 id="2.0.11. 清单 11. 设置为 24 个线程后 GC 输出|outline">清单 11. 设置为 24 个线程后 GC 输出</h5>
+<div><div id="highlighter_461261" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSYoungGen total 4800K, used 893K [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x23010000</code><code class="actionscript3 plain">)</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4160K, </code><code class="actionscript3 value">21</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1db9f570</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">)</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">ParOldGen total 19200K, used 16384K [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 19200K, </code><code class="actionscript3 value">85</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x14010020</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSPermGen total 12288K, used 2054K [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 12288K, </code><code class="actionscript3 value">16</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0f2119c0</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<p>新生代并行回收收集器可以使用以下参数启用：</p>
+<p>-XX:+MaxGCPauseMills:设置最大垃圾收集停顿时间，它的值是一个大于 0 的整数。收集器在工作时会调整 Java 堆大小或者其他一些参数，尽可能地把停顿时间控制在 MaxGCPauseMills 以内。如果希望减少停顿时间，而把这个值设置得很小，为了达到预期的停顿时间，JVM 可能会使用一个较小的堆 (一个小堆比一个大堆回收快)，而这将导致垃圾回收变得很频繁，从而增加了垃圾回收总时间，降低了吞吐量。</p>
+<p>-XX:+GCTimeRatio：设置吞吐量大小，它的值是一个 0-100 之间的整数。假设 GCTimeRatio 的值为 n，那么系统将花费不超过 1/(1+n) 的时间用于垃圾收集。比如 GCTimeRatio 等于 19，则系统用于垃圾收集的时间不超过 1/(1+19)=5%。默认情况下，它的取值是 99，即不超过 1%的时间用于垃圾收集。</p>
+<p>除此之外，并行回收收集器与并行收集器另一个不同之处在于，它支持一种自适应的 GC 调节策略，使用-XX:+UseAdaptiveSizePolicy 可以打开自适应 GC 策略。在这种模式下，新生代的大小、eden 和 survivor 的比例、晋升老年代的对象年龄等参数会被自动调整，以达到在堆大小、吞吐量和停顿时间之间的平衡点。在手工调优比较困难的场合，可以直接使用这种自适应的方式，仅指定虚拟机的最大堆、目标的吞吐量 (GCTimeRatio) 和停顿时间 (MaxGCPauseMills)，让虚拟机自己完成调优工作。</p>
+<h5 id="2.0.12. 清单 12. 新生代并行回收收集器 GC 输出|outline">清单 12. 新生代并行回收收集器 GC 输出</h5>
+<div><div id="highlighter_585195" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSYoungGen total 4800K, used 893K [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x23010000</code><code class="actionscript3 plain">)</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4160K, </code><code class="actionscript3 value">21</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1db9f570</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">)</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSOldGen total 19200K, used 16384K [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 19200K, </code><code class="actionscript3 value">85</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x14010020</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSPermGen total 12288K, used 2054K [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 12288K, </code><code class="actionscript3 value">16</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0f2119c0</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<p>它也显示了收集器的工作成果，也就是回收前的内存大小和回收后的内存大小，以及花费的时间。</p>
+<ul>
+<li>老年代并行回收收集器</li>
+</ul>
+<p>老年代的并行回收收集器也是一种多线程并发的收集器。和新生代并行回收收集器一样，它也是一种关注吞吐量的收集器。老年代并行回收收集器使用标记-压缩算法，JDK1.6 之后开始启用。</p>
+<p>使用-XX:+UseParallelOldGC 可以在新生代和老生代都使用并行回收收集器，这是一对非常关注吞吐量的垃圾收集器组合，在对吞吐量敏感的系统中，可以考虑使用。参数-XX:ParallelGCThreads 也可以用于设置垃圾回收时的线程数量。</p>
+<p>清单 13 是设置线程数量为 100 时老年代并行回收收集器输出日志：</p>
+<h5 id="2.0.13. 清单 13. 老年代并行回收收集器设置 100 线程时 GC 输出|outline">清单 13. 老年代并行回收收集器设置 100 线程时 GC 输出</h5>
+<div><div id="highlighter_99338" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">Heap</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSYoungGen total 4800K, used 893K [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x23010000</code><code class="actionscript3 plain">)</code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4160K, </code><code class="actionscript3 value">21</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1db9f570</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">)</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1e010000</code><code class="actionscript3 plain">)</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 640K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1ded0000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x1df70000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">ParOldGen total 19200K, used 16384K [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x1dac0000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 19200K, </code><code class="actionscript3 value">85</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x14010020</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x142d0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">PSPermGen total 12288K, used 2054K [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x13010000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">object space 12288K, </code><code class="actionscript3 value">16</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x0f010000</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0f2119c0</code><code class="actionscript3 plain">,</code><code class="actionscript3 value">0x0fc10000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<ul>
+<li>CMS 收集器</li>
+</ul>
+<p>与并行回收收集器不同，CMS 收集器主要关注于系统停顿时间。CMS 是 Concurrent Mark Sweep 的缩写，意为并发标记清除，从名称上可以得知，它使用的是标记-清除算法，同时它又是一个使用多线程并发回收的垃圾收集器。</p>
+<p>CMS 工作时，主要步骤有：初始标记、并发标记、重新标记、并发清除和并发重置。其中初始标记和重新标记是独占系统资源的，而并发标记、并发清除和并发重置是可以和用户线程一起执行的。因此，从整体上来说，CMS 收集不是独占式的，它可以在应用程序运行过程中进行垃圾回收。</p>
+<p>根据标记-清除算法，初始标记、并发标记和重新标记都是为了标记出需要回收的对象。并发清理则是在标记完成后，正式回收垃圾对象；并发重置是指在垃圾回收完成后，重新初始化 CMS 数据结构和数据，为下一次垃圾回收做好准备。并发标记、并发清理和并发重置都是可以和应用程序线程一起执行的。</p>
+<p>CMS 收集器在其主要的工作阶段虽然没有暴力地彻底暂停应用程序线程，但是由于它和应用程序线程并发执行，相互抢占 CPU，所以在 CMS 执行期内对应用程序吞吐量造成一定影响。CMS 默认启动的线程数是 (ParallelGCThreads+3)/4),ParallelGCThreads 是新生代并行收集器的线程数，也可以通过-XX:ParallelCMSThreads 参数手工设定 CMS 的线程数量。当 CPU 资源比较紧张时，受到 CMS 收集器线程的影响，应用程序的性能在垃圾回收阶段可能会非常糟糕。</p>
+<p>由于 CMS 收集器不是独占式的回收器，在 CMS 回收过程中，应用程序仍然在不停地工作。在应用程序工作过程中，又会不断地产生垃圾。这些新生成的垃圾在当前 CMS 回收过程中是无法清除的。同时，因为应用程序没有中断，所以在 CMS 回收过程中，还应该确保应用程序有足够的内存可用。因此，CMS 收集器不会等待堆内存饱和时才进行垃圾回收，而是当前堆内存使用率达到某一阈值时，便开始进行回收，以确保应用程序在 CMS 工作过程中依然有足够的空间支持应用程序运行。</p>
+<p>这个回收阈值可以使用-XX:CMSInitiatingOccupancyFraction 来指定，默认是 68。即当老年代的空间使用率达到 68%时，会执行一次 CMS 回收。如果应用程序的内存使用率增长很快，在 CMS 的执行过程中，已经出现了内存不足的情况，此时，CMS 回收将会失败，JVM 将启动老年代串行收集器进行垃圾回收。如果这样，应用程序将完全中断，直到垃圾收集完成，这时，应用程序的停顿时间可能很长。因此，根据应用程序的特点，可以对-XX:CMSInitiatingOccupancyFraction 进行调优。如果内存增长缓慢，则可以设置一个稍大的值，大的阈值可以有效降低 CMS 的触发频率，减少老年代回收的次数可以较为明显地改善应用程序性能。反之，如果应用程序内存使用率增长很快，则应该降低这个阈值，以避免频繁触发老年代串行收集器。</p>
+<p>标记-清除算法将会造成大量内存碎片，离散的可用空间无法分配较大的对象。在这种情况下，即使堆内存仍然有较大的剩余空间，也可能会被迫进行一次垃圾回收，以换取一块可用的连续内存，这种现象对系统性能是相当不利的，为了解决这个问题，CMS 收集器还提供了几个用于内存压缩整理的算法。</p>
+<p>-XX:+UseCMSCompactAtFullCollection 参数可以使 CMS 在垃圾收集完成后，进行一次内存碎片整理。内存碎片的整理并不是并发进行的。-XX:CMSFullGCsBeforeCompaction 参数可以用于设定进行多少次 CMS 回收后，进行一次内存压缩。</p>
+<p>-XX:CMSInitiatingOccupancyFraction 设置为 100，同时设置-XX:+UseCMSCompactAtFullCollection 和-XX:CMSFullGCsBeforeCompaction，日志输出如下：</p>
+<h5 id="2.0.14. 清单 14.CMS 垃圾回收器 GC 输出|outline">清单 14.CMS 垃圾回收器 GC 输出</h5>
+<div><div id="highlighter_165943" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 plain">[GC [DefNew: 825K-&gt;149K(4928K), </code><code class="actionscript3 value">0.0023384</code> <code class="actionscript3 plain">secs][Tenured: 8704K-&gt;661K(10944K),</code></div><div class="line number2 index1 alt1"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 value">0.0587725</code> <code class="actionscript3 plain">secs] 9017K-&gt;661K(15872K), </code></div><div class="line number3 index2 alt2"><code class="actionscript3 spaces">&nbsp;&nbsp;</code><code class="actionscript3 plain">[Perm : 374K-&gt;374K(12288K)], </code><code class="actionscript3 value">0.0612037</code> <code class="actionscript3 plain">secs] [Times: user=</code><code class="actionscript3 value">0.01</code> <code class="actionscript3 plain">sys=</code><code class="actionscript3 value">0.02</code><code class="actionscript3 plain">, real=</code><code class="actionscript3 value">0.06</code> <code class="actionscript3 plain">secs] </code></div><div class="line number4 index3 alt1"><code class="actionscript3 plain">Heap</code></div><div class="line number5 index4 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">def </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">generation total 4992K, used 179K [</code><code class="actionscript3 value">0x27010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27570000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">)</code></div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">eden space 4480K, </code><code class="actionscript3 value">4</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x27010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2703cda8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27470000</code><code class="actionscript3 plain">)</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">from space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x27470000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27470000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x274f0000</code><code class="actionscript3 plain">)</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">to space 512K, </code><code class="actionscript3 value">0</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x274f0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x274f0000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x27570000</code><code class="actionscript3 plain">)</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">tenured generation total 10944K, used 8853K [</code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2d010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">)</code></div><div class="line number10 index9 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 10944K, </code><code class="actionscript3 value">80</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x2c560000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2ce057c8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2ce05800</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x2d010000</code><code class="actionscript3 plain">)</code></div><div class="line number11 index10 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">compacting perm gen total 12288K, used 374K [</code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37c10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b010000</code><code class="actionscript3 plain">)</code></div><div class="line number12 index11 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">the space 12288K, </code><code class="actionscript3 value">3</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x37010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3706db10</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3706dc00</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x37c10000</code><code class="actionscript3 plain">)</code></div><div class="line number13 index12 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">ro space 10240K, </code><code class="actionscript3 value">51</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x3b010000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b543000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3b543000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3ba10000</code><code class="actionscript3 plain">)</code></div><div class="line number14 index13 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">rw space 12288K, </code><code class="actionscript3 value">55</code><code class="actionscript3 plain">% used [</code><code class="actionscript3 value">0x3ba10000</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c0ae4f8</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c0ae600</code><code class="actionscript3 plain">, </code><code class="actionscript3 value">0x3c610000</code><code class="actionscript3 plain">)</code></div></div></td></tr></tbody></table></div></div>
+<ul>
+<li>G1 收集器 (Garbage First)</li>
+</ul>
+<p>G1 收集器的目标是作为一款服务器的垃圾收集器，因此，它在吞吐量和停顿控制上，预期要优于 CMS 收集器。</p>
+<p>与 CMS 收集器相比，G1 收集器是基于标记-压缩算法的。因此，它不会产生空间碎片，也没有必要在收集完成后，进行一次独占式的碎片整理工作。G1 收集器还可以进行非常精确的停顿控制。它可以让开发人员指定当停顿时长为 M 时，垃圾回收时间不超过 N。使用参数-XX:+UnlockExperimentalVMOptions –XX:+UseG1GC 来启用 G1 回收器，设置 G1 回收器的目标停顿时间：-XX:MaxGCPauseMills=20,-XX:GCPauseIntervalMills=200。</p>
+<h2 id="3. 收集器对系统性能的影响|outline">收集器对系统性能的影响</h2>
+<p>通过清单 15 所示代码运行 1 万次循环，每次分配 512*100B 空间，采用不同的垃圾回收器，输出程序运行所消耗的时间。</p>
+<h5 id="3.0.1. 清单 15. 性能测试代码|outline">清单 15. 性能测试代码</h5>
+<div><div id="highlighter_913477" class="syntaxhighlighter notranslate actionscript3"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="actionscript3 keyword">import</code> <code class="actionscript3 plain">java.util.HashMap;</code></div><div class="line number2 index1 alt1">&nbsp;</div><div class="line number3 index2 alt2"><code class="actionscript3 keyword">public</code> <code class="actionscript3 color3">class</code> <code class="actionscript3 plain">GCTimeTest {</code></div><div class="line number4 index3 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 keyword">static</code> <code class="actionscript3 plain">HashMap map = </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">HashMap();</code></div><div class="line number5 index4 alt2">&nbsp;</div><div class="line number6 index5 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 keyword">public</code> <code class="actionscript3 keyword">static</code> <code class="actionscript3 keyword">void</code> <code class="actionscript3 plain">main(</code><code class="actionscript3 keyword">String</code><code class="actionscript3 plain">[] args){</code></div><div class="line number7 index6 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">long begintime = System.currentTimeMillis();</code></div><div class="line number8 index7 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 keyword">for</code><code class="actionscript3 plain">(</code><code class="actionscript3 keyword">int</code> <code class="actionscript3 plain">i=</code><code class="actionscript3 value">0</code><code class="actionscript3 plain">;i&lt;</code><code class="actionscript3 value">10000</code><code class="actionscript3 plain">;i++){</code></div><div class="line number9 index8 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 keyword">if</code><code class="actionscript3 plain">(map.size()*</code><code class="actionscript3 value">512</code><code class="actionscript3 plain">/</code><code class="actionscript3 value">1024</code><code class="actionscript3 plain">/</code><code class="actionscript3 value">1024</code><code class="actionscript3 plain">&gt;=</code><code class="actionscript3 value">400</code><code class="actionscript3 plain">){</code></div><div class="line number10 index9 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">map.clear();</code><code class="actionscript3 comments">//保护内存不溢出</code></div><div class="line number11 index10 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">System.out.println(</code><code class="actionscript3 string">"clean map"</code><code class="actionscript3 plain">);</code></div><div class="line number12 index11 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">}</code></div><div class="line number13 index12 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">byte[] b1;</code></div><div class="line number14 index13 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 keyword">for</code><code class="actionscript3 plain">(</code><code class="actionscript3 keyword">int</code> <code class="actionscript3 plain">j=</code><code class="actionscript3 value">0</code><code class="actionscript3 plain">;j&lt;</code><code class="actionscript3 value">100</code><code class="actionscript3 plain">;j++){</code></div><div class="line number15 index14 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">b1 = </code><code class="actionscript3 keyword">new</code> <code class="actionscript3 plain">byte[</code><code class="actionscript3 value">512</code><code class="actionscript3 plain">];</code></div><div class="line number16 index15 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">map.put(System.nanoTime(), b1);</code><code class="actionscript3 comments">//不断消耗内存</code></div><div class="line number17 index16 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">}</code></div><div class="line number18 index17 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">}</code></div><div class="line number19 index18 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">long endtime = System.currentTimeMillis();</code></div><div class="line number20 index19 alt1"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">System.out.println(endtime-begintime);</code></div><div class="line number21 index20 alt2"><code class="actionscript3 spaces">&nbsp;</code><code class="actionscript3 plain">}</code></div><div class="line number22 index21 alt1"><code class="actionscript3 plain">}</code></div></div></td></tr></tbody></table></div></div>
+<p>使用参数-Xmx512M -Xms512M -XX:+UseParNewGC 运行代码，输出如下：</p>
+<p>clean map 8565</p>
+<p>cost time=1655</p>
+<p>使用参数-Xmx512M -Xms512M -XX:+UseParallelOldGC –XX:ParallelGCThreads=8 运行代码，输出如下：</p>
+<p>clean map 8798</p>
+<p>cost time=1998</p>
+<p>使用参数-Xmx512M -Xms512M -XX:+UseSerialGC 运行代码，输出如下：</p>
+<p>clean map 8864</p>
+<p>cost time=1717</p>
+<p>使用参数-Xmx512M -Xms512M -XX:+UseConcMarkSweepGC 运行代码，输出如下：</p>
+<p>clean map 8862</p>
+<p>cost time=1530</p>
+<p>上面例子的 GC 输出可以看出，采用不同的垃圾回收机制及设定不同的线程数，对于代码段的整体执行时间有较大的影响。需要读者有针对性地选用适合自己代码段的垃圾回收机制。</p>
+<h2 id="4.GC 相关参数总结|outline">GC 相关参数总结</h2>
+<p>1. 与串行回收器相关的参数</p>
+<p>-XX:+UseSerialGC:在新生代和老年代使用串行回收器。</p>
+<p>-XX:+SuivivorRatio:设置 eden 区大小和 survivor 区大小的比例。</p>
+<p>-XX:+PretenureSizeThreshold:设置大对象直接进入老年代的阈值。当对象的大小超过这个值时，将直接在老年代分配。</p>
+<p>-XX:MaxTenuringThreshold:设置对象进入老年代的年龄的最大值。每一次 Minor GC 后，对象年龄就加 1。任何大于这个年龄的对象，一定会进入老年代。</p>
+<p>2. 与并行 GC 相关的参数</p>
+<p>-XX:+UseParNewGC: 在新生代使用并行收集器。</p>
+<p>-XX:+UseParallelOldGC: 老年代使用并行回收收集器。</p>
+<p>-XX:ParallelGCThreads：设置用于垃圾回收的线程数。通常情况下可以和 CPU 数量相等。但在 CPU 数量比较多的情况下，设置相对较小的数值也是合理的。</p>
+<p>-XX:MaxGCPauseMills：设置最大垃圾收集停顿时间。它的值是一个大于 0 的整数。收集器在工作时，会调整 Java 堆大小或者其他一些参数，尽可能地把停顿时间控制在 MaxGCPauseMills 以内。</p>
+<p>-XX:GCTimeRatio:设置吞吐量大小，它的值是一个 0-100 之间的整数。假设 GCTimeRatio 的值为 n，那么系统将花费不超过 1/(1+n) 的时间用于垃圾收集。</p>
+<p>-XX:+UseAdaptiveSizePolicy:打开自适应 GC 策略。在这种模式下，新生代的大小，eden 和 survivor 的比例、晋升老年代的对象年龄等参数会被自动调整，以达到在堆大小、吞吐量和停顿时间之间的平衡点。</p>
+<p>3. 与 CMS 回收器相关的参数</p>
+<p>-XX:+UseConcMarkSweepGC: 新生代使用并行收集器，老年代使用 CMS+串行收集器。</p>
+<p>-XX:+ParallelCMSThreads: 设定 CMS 的线程数量。</p>
+<p>-XX:+CMSInitiatingOccupancyFraction:设置 CMS 收集器在老年代空间被使用多少后触发，默认为 68%。</p>
+<p>-XX:+UseFullGCsBeforeCompaction:设定进行多少次 CMS 垃圾回收后，进行一次内存压缩。</p>
+<p>-XX:+CMSClassUnloadingEnabled:允许对类元数据进行回收。</p>
+<p>-XX:+CMSParallelRemarkEndable:启用并行重标记。</p>
+<p>-XX:CMSInitatingPermOccupancyFraction:当永久区占用率达到这一百分比后，启动 CMS 回收 (前提是-XX:+CMSClassUnloadingEnabled 激活了)。</p>
+<p>-XX:UseCMSInitatingOccupancyOnly:表示只在到达阈值的时候，才进行 CMS 回收。</p>
+<p>-XX:+CMSIncrementalMode:使用增量模式，比较适合单 CPU。</p>
+<p>4. 与 G1 回收器相关的参数</p>
+<p>-XX:+UseG1GC：使用 G1 回收器。</p>
+<p>-XX:+UnlockExperimentalVMOptions:允许使用实验性参数。</p>
+<p>-XX:+MaxGCPauseMills:设置最大垃圾收集停顿时间。</p>
+<p>-XX:+GCPauseIntervalMills:设置停顿间隔时间。</p>
+<p>5. 其他参数</p>
+<p>-XX:+DisableExplicitGC: 禁用显示 GC。</p>
+<h2 id="5. 结束语|outline">结束语</h2>
+<p>通过本文的学习，读者可以掌握基本的 JVM 垃圾回收器设计原理及使用规范。基于笔者多年的工作经验，没有哪一条优化是可以照本宣科的，它一定是基于您对 JVM 垃圾回收器工作原理及自身程序设计有一定了解前提下，通过大量的实验来找出最适合自己的优化方案。</p>
+
+        
+        
+        <!-- BEGIN #author-bio -->
+
+
+<!-- END #author-bio -->
+	</div>
+	<!-- END .entry -->
+
+
+<!-- JiaThis Button BEGIN -->
+<div class="jiathis_style_24x24">
+<a class="jiathis_button_tsina" title="分享到新浪微博"><span class="jiathis_txt jtico jtico_tsina"></span></a>
+<a class="jiathis_button_weixin" title="分享到微信"><span class="jiathis_txt jtico jtico_weixin"></span></a>
+<a class="jiathis_button_qzone" title="分享到QQ空间"><span class="jiathis_txt jtico jtico_qzone"></span></a>
+<a class="jiathis_button_fb" title="分享到Facebook"><span class="jiathis_txt jtico jtico_fb"></span></a>
+<a class="jiathis_button_renren" title="分享到人人网"><span class="jiathis_txt jtico jtico_renren"></span></a>
+<a class="jiathis_button_douban" title="分享到豆瓣"><span class="jiathis_txt jtico jtico_douban"></span></a>
+<a class="jiathis_button_googleplus" title="分享到Google+"><span class="jiathis_txt jtico jtico_googleplus"></span></a>
+<a class="jiathis_button_readitlater"></a>
+<a class="jiathis_button_evernote" title="分享到EverNote"><span class="jiathis_txt jtico jtico_evernote"></span></a>
+<a class="jiathis_button_ydnote" title="分享到有道云笔记"><span class="jiathis_txt jtico jtico_ydnote"></span></a>
+<a href="http://www.jiathis.com/share?uid=1745061" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis external" target="_blank" rel="nofollow"></a>
+<a class="jiathis_counter_style"><span class="jiathis_button_expanded jiathis_counter jiathis_bubble_style" id="jiathis_counter_43" title="累计分享6次">6</span></a>
+</div>
+
+
+<script type="text/javascript">
+var jiathis_config={
+	data_track_clickback:false,
+	title:"《JVM 垃圾回收器工作原理及使用实例介绍》",
+	summary:"本文首先介绍了JVM各类垃圾回收器及其工作原理，接着通过实例演示它们的使用方式及需注意事项，最后总结了垃圾回收器的配置方式及参数意义。",
+	pic:"http://incdn1.b0.upaiyun.com/2015/06/0774ec92d6d239ca579a3169120c0fb5.png",
+	appkey:{
+                "tsina":2284713194 //for importnew
+        },
+	ralateuid:{
+		"tsina":2991905905 //for importnew
+	},
+	hideMore:false
+}
+</script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jia.js" charset="utf-8"></script><script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/plugin.client.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+<br><br>
+<div id="text-13">			<div class="textwidget"><p><span><br>
+<a href="http://100offer.com/join/imp?utm_source=importnew&utm_medium=dis&utm_campaign=imp" target="_blank" class="external" rel="nofollow"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/bfdcef89gw1ewfkw0qsc5j208c06ywf8.jpg" border="0"></a><br>
+</span></p>
+</div>
+		</div>
+</div>
+<!-- END .post -->	
+	
+<script type="text/javascript">
+window._wp_rp_static_base_url = "http://dtmvdvtzf8rz0.cloudfront.net/static/";
+
+</script>
+<h3 class="related_post_title">相关文章</h3><ul class="related_post wp_rp" style="visibility:visible;"><li position="0"><a href="http://www.importnew.com/16533.html">Java 8最快的垃圾搜集器是什么？</a></li><li position="1"><a href="http://www.importnew.com/16327.html">JVM 优化经验总结</a></li><li position="2"><a href="http://www.importnew.com/16091.html">什么是垃圾回收</a></li><li position="3"><a href="http://www.importnew.com/15802.html">JVM 垃圾回收器工作原理及使用实例介绍</a></li><li position="4"><a href="http://www.importnew.com/13838.html">Java GC系列（4）：垃圾回收监视和分析</a></li><li position="5"><a href="http://www.importnew.com/13827.html">Java GC系列（3）：垃圾回收器种类</a></li><li position="6"><a href="http://www.importnew.com/13504.html">Java GC系列（1）：Java垃圾回收简介</a></li><li position="7"><a href="http://www.importnew.com/13493.html">Java GC系列（2）：Java垃圾回收是如何工作的？</a></li><li position="8"><a href="http://www.importnew.com/11336.html">高吞吐低延迟Java应用的垃圾回收优化</a></li><li position="9"><a href="http://www.importnew.com/11372.html">面向GC的Java编程</a></li></ul>
+
+			
+	
+<!-- BEGIN #respond -->
+<div id="respond">
+
+	<h3 class="widget-title">发表评论</h3>
+	
+	<!-- BEGIN .cancel-comment-reply -->
+	<p class="cancel-comment-reply">
+		
+		<a rel="nofollow" id="cancel-comment-reply-link" href="http://www.importnew.com/16325.html#respond" style="display:none;">点击这里取消回复。</a>		
+	</p>
+	<!-- END .cancel-comment-reply -->
+
+		
+	<!-- BEGIN #comment-form -->
+	<form action="http://www.importnew.com/wp-comments-post.php" method="post" id="comment-form">
+		
+		<fieldset>
+		
+			<legend class="none">Comment form</legend>
+			
+			<!-- BEGIN .container -->
+			<div class="container">
+			
+							
+				<div class="grid-4 margin-20">
+					<label for="author">Name<span class="red">*</span></label>
+				</div>
+				
+				<div class="grid-4 margin-20">
+					<div class="input-wrapper"><input type="text" name="author" id="author" value="" tabindex="1" size="30" class="required" placeholder="姓名"></div>
+				</div>
+				<div class="clear"></div>
+				
+				<div class="grid-4 margin-20">
+					<label for="email">邮箱<span class="red">*</span></label>
+				</div>
+				
+				<div class="grid-4 margin-20">
+					<div class="input-wrapper"><input type="email" name="email" id="email" value="" tabindex="2" size="30" class="required email" placeholder="请填写邮箱"></div>
+				</div>
+				<div class="clear"></div>
+				
+				<div class="grid-4 margin-20">
+					<label for="url">网站 (请以 http://开头)</label>
+				</div>
+				
+				<div class="grid-4 margin-20">
+					<div class="input-wrapper"><input type="url" name="url" id="url" value="" tabindex="3" size="30" placeholder="请填写网站地址"></div>
+				</div>
+				<div class="clear"></div>
+				
+								
+				<div class="grid-8 margin-20">
+					<label for="comment" class="none margin-20">评论内容<span class="red">*</span></label>
+					<div class="input-wrapper"><textarea name="comment" id="comment" rows="20" cols="30" class="required" tabindex="4" onkeydown="if(event.ctrlKey &amp;&amp; event.keyCode==13){document.getElementById(&#39;comment-form-submit&#39;).click(); return false;}" placeholder="请填写评论内容"></textarea></div>
+				</div>
+				<div class="clear"></div>
+				
+			</div>
+			<!-- END .container -->
+			
+			<p>(<span class="red">*</span>) 表示必填项</p>
+			<p></p><div class="submit-wrapper"><a id="comment-form-submit" class="submit">提交评论</a></div><p></p>
+			<input type="hidden" name="comment_post_ID" value="16325" id="comment_post_ID">
+<input type="hidden" name="comment_parent" id="comment_parent" value="0">
+			<p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="600fb3af31"></p>			
+		</fieldset>
+		
+	</form>
+	<!-- END #comment-form -->
+	
+	
+</div>
+<!-- END #respond -->
+
+	<h3 id="comments" class="widget-title">1 条评论</h3>
+	
+	<!-- BEGIN .commentlist -->
+	<ol class="commentlist">
+	
+				<li class="comment even thread-even depth-1" id="comment-456393">
+				<div id="div-comment-456393" class="comment-body">
+				<div class="comment-author vcard">
+				<cite class="fn">Aceslup</cite> <span class="says">说道：</span>		</div>
+
+		<div class="comment-meta commentmetadata"><a href="http://www.importnew.com/16325.html#comment-456393">
+			2015/08/13 下午 5:52</a>		</div>
+
+		<p>博主，去哪里找到JVM官方支持的参数呀，能提供一下么？</p>
+<p> <img style="padding: 0px; border: none; cursor: pointer;" onmouseover="this.width=this.width*1.3" onmouseout="this.width=this.width/1.2" id="up-456393" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/1_14_up.png" alt="Thumb up" onclick="javascript:ckratingKarma(&#39;456393&#39;, &#39;add&#39;, &#39;www.importnew.com/wp-content/plugins/comment-rating/&#39;, &#39;1_14_&#39;);" title="赞同"> <span id="karma-456393-up" style="font-size:12px; color:#009933;">0</span>&nbsp;<img style="padding: 0px; border: none; cursor: pointer;" onmouseover="this.width=this.width*1.3" onmouseout="this.width=this.width/1.2" id="down-456393" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/1_14_down.png" alt="Thumb down" onclick="javascript:ckratingKarma(&#39;456393&#39;, &#39;subtract&#39;, &#39;www.importnew.com/wp-content/plugins/comment-rating/&#39;, &#39;1_14_&#39;)" title="反对"> <span id="karma-456393-down" style="font-size:12px; color:#990033;">0</span></p>
+		<div class="reply">
+		<a class="comment-reply-link" href="http://www.importnew.com/16325.html?replytocom=456393#respond" onclick="return addComment.moveForm(" div-comment-456393",="" "456393",="" "respond",="" "16325")"="">回复</a>		</div>
+				</div>
+		</li>
+	
+	</ol>
+
+	<!-- END .commentlist -->
+
+		
+ 
+<h3 id="comments-from-weibo" class="widget-title">来自微博的评论</h3>
+<wb:comments url="http://www.importnew.com/16325.html" border="y" width="auto" color="e8e8e8,ffffff,4c4c4c,5093d5,cccccc,f0f0f0" appkey="2284713194" ralateuid="2991905905"><iframe id="WBCommentFrame" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/comments.html" width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" style="height: 1265px;"></iframe></wb:comments>
+
+
+
+		
+				
+	<!-- BEGIN .navigation -->
+	<div class="navigation margin-20">
+	
+		<div class="alignleft"><a href="http://www.importnew.com/16301.html" rel="prev">« HashMap的实现原理</a></div>
+		<div class="alignright"><a href="http://www.importnew.com/16327.html" rel="next">JVM 优化经验总结 »</a></div>
+		<div class="clear"></div>
+
+	</div>
+	<!-- END .navigation -->
+	
+		
+</div>
+<!-- END .grid-8 -->
+
+<!-- BEGIN #sidebar -->
+<div id="sidebar" class="grid-4">
+
+	<div id="search-3" class="widget widget_search"><!-- BEGIN #searchform -->
+<form method="get" id="searchform" action="http://www.importnew.com/">
+
+	<label class="none" for="s">Search for:</label>
+	<div class="input-wrapper"><input type="text" value="" name="s" id="s" placeholder="Search"></div>
+	<input type="submit" id="searchsubmit" value="Search">
+	
+</form>
+<!-- END #searchform --></div><div id="text-14" class="widget widget_text">			<div class="textwidget"><p><a href="http://blog.jobbole.com/84342/?utm_source=www.importnew.com&utm_medium=rightBanner-1&utm_content=2015.9.16" target="_blank" class="external" rel="nofollow"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/e5298966gw1evyjrd4iqcj208c03c0t0.jpg"></a></p>
+</div>
+		</div><div id="aw_tabbed_widget-2" class="widget aw_tabbed_widget"><div class="tabs"><ul class="nav clearfix"><li class="active"><a id="link-most-discussed" href="http://www.importnew.com/16325.html#tab-most-discussed" title="本月热门文章">本月热门文章</a></li><li><a id="link-latest-comments" href="http://www.importnew.com/16325.html#tab-latest-comments" title="年度热门文章">年度热门文章</a></li><li><a id="link-tags" href="http://www.importnew.com/16325.html#tab-tags" title="热门标签">热门标签</a></li></ul><div id="tab-most-discussed" class="tab" style="display: block;"><div class="floated-thumb">							
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">0</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16742.html" title="Java 多维数组遍历">Java 多维数组遍历</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">1</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16727.html" title="使用Java 8函数式编程生成字母序列">使用Java 8函数式编程生成字母序列</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">2</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16775.html" title="Java编程入门（1.6）：现代用户界面">Java编程入门（1.6）：现代用户界面</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">3</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16841.html" title="Stackoverflow上人气最旺的10个Java问题">Stackoverflow上人气最旺的10个Java问题</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">4</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16843.html" title="快速高效学习Java编程在线资源Top 20">快速高效学习Java编程在线资源Top 20</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">5</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16725.html" title="Java常见异常及解释">Java常见异常及解释</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">6</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16721.html" title="Java NIO缓冲">Java NIO缓冲</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">7</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16737.html" title="Java 自动装箱性能">Java 自动装箱性能</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">8</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16761.html" title="Java 模块化系统初探">Java 模块化系统初探</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+							
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">9</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16782.html" title="理解Spring MVC Model Attribute 和 Session Attribute">理解Spring MVC Model Attribute 和 Session Attribute</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+						</div></div><div id="tab-latest-comments" class="tab" style="display: none;"><div class="floated-thumb">							
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">0</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/13619.html" title="跟我一起学Spring 3(4)--深入理解IoC(控制反转)和DI(依赖注入)">跟我一起学Spring 3(4)–深入理解IoC(控制反转)和DI(依赖注入)</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">1</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/14111.html" title="Java I/O底层是如何工作的？">Java I/O底层是如何工作的？</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">2</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/15446.html" title="正确使用Java事件通知">正确使用Java事件通知</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">3</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/15028.html" title="如何使用Java、Servlet创建二维码">如何使用Java、Servlet创建二维码</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">4</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/15778.html" title="IntelliJ IDEA的光芒会盖过Eclipse吗">IntelliJ IDEA的光芒会盖过Eclipse吗</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta  no-thumb">
+							
+								<p>
+								    <span class="numb">5</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/15020.html" title="Web服务器的工作原理">Web服务器的工作原理</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">6</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/16700.html" title="Java中的常量：如何避免反模式">Java中的常量：如何避免反模式</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">7</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/13556.html" title="JVM必备指南 ">JVM必备指南</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">8</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/13664.html" title="为什么要使用String">为什么要使用String</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+													
+											
+							<!-- BEGIN .post-meta -->
+							<div class="post-meta ">
+							
+								<p>
+								    <span class="numb">9</span>
+								    <a class="meta-title" target="_blank" href="http://www.importnew.com/13859.html" title="关于Java你可能不知道的10件事">关于Java你可能不知道的10件事</a><br>
+								</p>
+									
+							</div>
+							<!-- END .post-meta -->
+							
+							<div class="clear"></div>
+							
+						</div></div><div id="tab-tags" class="tab" style="display: none;"><p><a href="http://www.importnew.com/tag/android23days" class="tag-link-240" title="8 个话题" style="font-size: 11.5px;">android23days</a>
+<a href="http://www.importnew.com/tag/android-studio" class="tag-link-177" title="3 个话题" style="font-size: 8px;">Android Studio</a>
+<a href="http://www.importnew.com/tag/android" class="tag-link-36" title="64 个话题" style="font-size: 20.1px;">Android开发</a>
+<a href="http://www.importnew.com/tag/aop" class="tag-link-204" title="3 个话题" style="font-size: 8px;">AOP</a>
+<a href="http://www.importnew.com/tag/api" class="tag-link-308" title="4 个话题" style="font-size: 9px;">API</a>
+<a href="http://www.importnew.com/tag/clojure" class="tag-link-90" title="3 个话题" style="font-size: 8px;">Clojure</a>
+<a href="http://www.importnew.com/tag/collection" class="tag-link-52" title="4 个话题" style="font-size: 9px;">Collection</a>
+<a href="http://www.importnew.com/tag/concurrenthashmap" class="tag-link-355" title="4 个话题" style="font-size: 9px;">ConcurrentHashMap</a>
+<a href="http://www.importnew.com/tag/eclipse" class="tag-link-81" title="25 个话题" style="font-size: 16.1px;">Eclipse</a>
+<a href="http://www.importnew.com/tag/facebook" class="tag-link-145" title="3 个话题" style="font-size: 8px;">Facebook</a>
+<a href="http://www.importnew.com/tag/featuredpost" class="tag-link-503" title="5 个话题" style="font-size: 9.8px;">featuredpost</a>
+<a href="http://www.importnew.com/tag/gc" class="tag-link-87" title="27 个话题" style="font-size: 16.5px;">GC</a>
+<a href="http://www.importnew.com/tag/google" class="tag-link-183" title="5 个话题" style="font-size: 9.8px;">Google</a>
+<a href="http://www.importnew.com/tag/google-io-2013" class="tag-link-173" title="4 个话题" style="font-size: 9px;">Google I/O 2013</a>
+<a href="http://www.importnew.com/tag/gradle" class="tag-link-201" title="4 个话题" style="font-size: 9px;">Gradle</a>
+<a href="http://www.importnew.com/tag/guava" class="tag-link-554" title="8 个话题" style="font-size: 11.5px;">Guava</a>
+<a href="http://www.importnew.com/tag/hadoop" class="tag-link-140" title="12 个话题" style="font-size: 13.1px;">Hadoop</a>
+<a href="http://www.importnew.com/tag/hashmap" class="tag-link-284" title="14 个话题" style="font-size: 13.8px;">HashMap</a>
+<a href="http://www.importnew.com/tag/hashset" class="tag-link-60" title="5 个话题" style="font-size: 9.8px;">HashSet</a>
+<a href="http://www.importnew.com/tag/hbase" class="tag-link-128" title="13 个话题" style="font-size: 13.5px;">HBase</a>
+<a href="http://www.importnew.com/tag/hibernate" class="tag-link-109" title="10 个话题" style="font-size: 12.4px;">Hibernate</a>
+<a href="http://www.importnew.com/tag/ide" class="tag-link-168" title="4 个话题" style="font-size: 9px;">IDE</a>
+<a href="http://www.importnew.com/tag/intellij" class="tag-link-213" title="6 个话题" style="font-size: 10.5px;">IntelliJ</a>
+<a href="http://www.importnew.com/tag/io" class="tag-link-70" title="4 个话题" style="font-size: 9px;">io</a>
+<a href="http://www.importnew.com/tag/java" class="tag-link-35" title="100 个话题" style="font-size: 22px;">Java</a>
+<a href="http://www.importnew.com/tag/java-7" class="tag-link-57" title="3 个话题" style="font-size: 8px;">java 7</a>
+<a href="http://www.importnew.com/tag/java8" class="tag-link-354" title="20 个话题" style="font-size: 15.2px;">java8</a>
+<a href="http://www.importnew.com/tag/java-8" class="tag-link-50" title="27 个话题" style="font-size: 16.5px;">java 8</a>
+<a href="http://www.importnew.com/tag/java9" class="tag-link-436" title="6 个话题" style="font-size: 10.5px;">Java9</a>
+<a href="http://www.importnew.com/tag/java-9" class="tag-link-180" title="3 个话题" style="font-size: 8px;">java 9</a>
+<a href="http://www.importnew.com/tag/java10%e5%a4%a7%e4%bc%98%e7%82%b9" class="tag-link-263" title="5 个话题" style="font-size: 9.8px;">Java10大优点</a>
+<a href="http://www.importnew.com/tag/javaee" class="tag-link-379" title="5 个话题" style="font-size: 9.8px;">javaee</a>
+<a href="http://www.importnew.com/tag/javaee7" class="tag-link-456" title="5 个话题" style="font-size: 9.8px;">Javaee7</a>
+<a href="http://www.importnew.com/tag/javaee%e4%b8%8emaven%e6%95%99%e7%a8%8b" class="tag-link-462" title="7 个话题" style="font-size: 11px;">JavaEE与Maven教程</a>
+<a href="http://www.importnew.com/tag/java-gc" class="tag-link-115" title="6 个话题" style="font-size: 10.5px;">Java GC</a>
+<a href="http://www.importnew.com/tag/javagc%e4%b8%93%e5%ae%b6" class="tag-link-491" title="5 个话题" style="font-size: 9.8px;">JavaGC专家</a>
+<a href="http://www.importnew.com/tag/java%e7%bc%96%e7%a8%8b%e5%85%a5%e9%97%a8" class="tag-link-639" title="12 个话题" style="font-size: 13.1px;">Java编程入门</a>
+<a href="http://www.importnew.com/tag/jdbc" class="tag-link-122" title="8 个话题" style="font-size: 11.5px;">JDBC</a>
+<a href="http://www.importnew.com/tag/jdk" class="tag-link-44" title="5 个话题" style="font-size: 9.8px;">JDK</a>
+<a href="http://www.importnew.com/tag/junit" class="tag-link-337" title="6 个话题" style="font-size: 10.5px;">JUnit</a>
+<a href="http://www.importnew.com/tag/jvm" class="tag-link-80" title="46 个话题" style="font-size: 18.7px;">JVM</a>
+<a href="http://www.importnew.com/tag/lambda" class="tag-link-92" title="6 个话题" style="font-size: 10.5px;">Lambda</a>
+<a href="http://www.importnew.com/tag/lambda%e8%a1%a8%e8%be%be%e5%bc%8f" class="tag-link-356" title="4 个话题" style="font-size: 9px;">lambda表达式</a>
+<a href="http://www.importnew.com/tag/log4j" class="tag-link-117" title="3 个话题" style="font-size: 8px;">log4j</a>
+<a href="http://www.importnew.com/tag/mapreduce" class="tag-link-106" title="7 个话题" style="font-size: 11px;">MapReduce</a>
+<a href="http://www.importnew.com/tag/maven" class="tag-link-385" title="8 个话题" style="font-size: 11.5px;">maven</a>
+<a href="http://www.importnew.com/tag/ndk" class="tag-link-97" title="3 个话题" style="font-size: 8px;">NDK</a>
+<a href="http://www.importnew.com/tag/netty" class="tag-link-130" title="10 个话题" style="font-size: 12.4px;">Netty</a>
+<a href="http://www.importnew.com/tag/nio" class="tag-link-69" title="7 个话题" style="font-size: 11px;">nio</a>
+<a href="http://www.importnew.com/tag/nio2-0" class="tag-link-116" title="6 个话题" style="font-size: 10.5px;">NIO2.0</a>
+<a href="http://www.importnew.com/tag/oauth-2-0" class="tag-link-49" title="4 个话题" style="font-size: 9px;">OAuth 2.0</a>
+<a href="http://www.importnew.com/tag/oracle" class="tag-link-153" title="9 个话题" style="font-size: 12px;">oracle</a>
+<a href="http://www.importnew.com/tag/restful" class="tag-link-196" title="5 个话题" style="font-size: 9.8px;">RESTful</a>
+<a href="http://www.importnew.com/tag/scala" class="tag-link-89" title="17 个话题" style="font-size: 14.6px;">Scala</a>
+<a href="http://www.importnew.com/tag/scala-tutorial" class="tag-link-155" title="6 个话题" style="font-size: 10.5px;">Scala tutorial</a>
+<a href="http://www.importnew.com/tag/solr" class="tag-link-429" title="7 个话题" style="font-size: 11px;">solr</a>
+<a href="http://www.importnew.com/tag/spring" class="tag-link-53" title="40 个话题" style="font-size: 18.1px;">Spring</a>
+<a href="http://www.importnew.com/tag/spring-security" class="tag-link-216" title="5 个话题" style="font-size: 9.8px;">Spring Security</a>
+<a href="http://www.importnew.com/tag/string" class="tag-link-252" title="14 个话题" style="font-size: 13.8px;">String</a>
+<a href="http://www.importnew.com/tag/tomcat" class="tag-link-225" title="8 个话题" style="font-size: 11.5px;">Tomcat</a>
+<a href="http://www.importnew.com/tag/unsafe" class="tag-link-302" title="5 个话题" style="font-size: 9.8px;">Unsafe</a>
+<a href="http://www.importnew.com/tag/web-service" class="tag-link-103" title="4 个话题" style="font-size: 9px;">Web Service</a>
+<a href="http://www.importnew.com/tag/%e4%b9%a6%e7%b1%8d" class="tag-link-40" title="4 个话题" style="font-size: 9px;">书籍</a>
+<a href="http://www.importnew.com/tag/%e4%bc%98%e5%8c%96" class="tag-link-171" title="3 个话题" style="font-size: 8px;">优化</a>
+<a href="http://www.importnew.com/tag/%e5%86%85%e5%ad%98%e6%b3%84%e9%9c%b2" class="tag-link-124" title="5 个话题" style="font-size: 9.8px;">内存泄露</a>
+<a href="http://www.importnew.com/tag/%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86" class="tag-link-273" title="12 个话题" style="font-size: 13.1px;">内存管理</a>
+<a href="http://www.importnew.com/tag/%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95" class="tag-link-96" title="3 个话题" style="font-size: 8px;">单元测试</a>
+<a href="http://www.importnew.com/tag/%e5%8f%82%e6%95%b0%e5%a4%aa%e5%a4%9a%e6%80%8e%e4%b9%88%e5%8a%9e" class="tag-link-470" title="8 个话题" style="font-size: 11.5px;">参数太多怎么办</a>
+<a href="http://www.importnew.com/tag/%e5%91%a8%e5%88%8a" class="tag-link-259" title="5 个话题" style="font-size: 9.8px;">周刊</a>
+<a href="http://www.importnew.com/tag/%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6%e6%95%99%e7%a8%8b" class="tag-link-473" title="4 个话题" style="font-size: 9px;">垃圾回收教程</a>
+<a href="http://www.importnew.com/tag/%e5%9f%ba%e7%a1%80%e6%8a%80%e6%9c%af" class="tag-link-58" title="53 个话题" style="font-size: 19.3px;">基础技术</a>
+<a href="http://www.importnew.com/tag/%e5%a4%9a%e7%ba%bf%e7%a8%8b" class="tag-link-46" title="12 个话题" style="font-size: 13.1px;">多线程</a>
+<a href="http://www.importnew.com/tag/%e5%ae%89%e5%85%a8" class="tag-link-235" title="4 个话题" style="font-size: 9px;">安全</a>
+<a href="http://www.importnew.com/tag/%e5%ae%89%e5%8d%93%e7%83%ad%e7%82%b9" class="tag-link-286" title="5 个话题" style="font-size: 9.8px;">安卓热点</a>
+<a href="http://www.importnew.com/tag/%e5%b7%a5%e5%85%b7" class="tag-link-126" title="4 个话题" style="font-size: 9px;">工具</a>
+<a href="http://www.importnew.com/tag/%e5%b9%b6%e5%8f%91" class="tag-link-401" title="7 个话题" style="font-size: 11px;">并发</a>
+<a href="http://www.importnew.com/tag/%e5%b9%b6%e5%8f%91%e7%bc%96%e7%a8%8b" class="tag-link-64" title="3 个话题" style="font-size: 8px;">并发编程</a>
+<a href="http://www.importnew.com/tag/%e5%ba%8f%e5%88%97%e5%8c%96" class="tag-link-298" title="5 个话题" style="font-size: 9.8px;">序列化</a>
+<a href="http://www.importnew.com/tag/%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86" class="tag-link-214" title="14 个话题" style="font-size: 13.8px;">异常处理</a>
+<a href="http://www.importnew.com/tag/%e6%80%a7%e8%83%bd" class="tag-link-47" title="12 个话题" style="font-size: 13.1px;">性能</a>
+<a href="http://www.importnew.com/tag/%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96" class="tag-link-88" title="9 个话题" style="font-size: 12px;">性能优化</a>
+<a href="http://www.importnew.com/tag/%e6%80%a7%e8%83%bd%e8%b0%83%e4%bc%98" class="tag-link-282" title="9 个话题" style="font-size: 12px;">性能调优</a>
+<a href="http://www.importnew.com/tag/%e6%8a%80%e6%9c%af%e5%8d%9a%e5%ae%a2" class="tag-link-167" title="3 个话题" style="font-size: 8px;">技术博客</a>
+<a href="http://www.importnew.com/tag/%e6%95%99%e7%a8%8b" class="tag-link-156" title="16 个话题" style="font-size: 14.3px;">教程</a>
+<a href="http://www.importnew.com/tag/%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84" class="tag-link-283" title="4 个话题" style="font-size: 9px;">数据结构</a>
+<a href="http://www.importnew.com/tag/%e6%97%a5%e5%bf%97" class="tag-link-29" title="4 个话题" style="font-size: 9px;">日志</a>
+<a href="http://www.importnew.com/tag/%e6%ad%bb%e9%94%81" class="tag-link-343" title="5 个话题" style="font-size: 9.8px;">死锁</a>
+<a href="http://www.importnew.com/tag/%e6%b3%9b%e5%9e%8b" class="tag-link-246" title="10 个话题" style="font-size: 12.4px;">泛型</a>
+<a href="http://www.importnew.com/tag/%e6%b5%8b%e8%af%95" class="tag-link-237" title="5 个话题" style="font-size: 9.8px;">测试</a>
+<a href="http://www.importnew.com/tag/%e6%b8%b8%e6%88%8f" class="tag-link-184" title="9 个话题" style="font-size: 12px;">游戏</a>
+<a href="http://www.importnew.com/tag/%e7%ad%96%e7%95%a5%e6%a8%a1%e5%bc%8f" class="tag-link-435" title="4 个话题" style="font-size: 9px;">策略模式</a>
+<a href="http://www.importnew.com/tag/%e7%ae%97%e6%b3%95" class="tag-link-270" title="5 个话题" style="font-size: 9.8px;">算法</a>
+<a href="http://www.importnew.com/tag/%e7%ba%bf%e7%a8%8b%e6%b1%a0" class="tag-link-297" title="4 个话题" style="font-size: 9px;">线程池</a>
+<a href="http://www.importnew.com/tag/%e7%bb%88%e6%9e%81%e7%88%b6%e7%b1%bb%e9%97%ae%e7%ad%94" class="tag-link-461" title="5 个话题" style="font-size: 9.8px;">终极父类问答</a>
+<a href="http://www.importnew.com/tag/%e8%a1%8c%e4%b8%9a%e8%b5%84%e8%ae%af" class="tag-link-129" title="4 个话题" style="font-size: 9px;">行业资讯</a>
+<a href="http://www.importnew.com/tag/videos" class="tag-link-72" title="3 个话题" style="font-size: 8px;">视频</a>
+<a href="http://www.importnew.com/tag/%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f" class="tag-link-30" title="31 个话题" style="font-size: 17.1px;">设计模式</a>
+<a href="http://www.importnew.com/tag/%e9%87%8d%e6%9e%84" class="tag-link-182" title="4 个话题" style="font-size: 9px;">重构</a>
+<a href="http://www.importnew.com/tag/%e9%9d%a2%e8%af%95" class="tag-link-31" title="15 个话题" style="font-size: 14px;">面试</a>
+<a href="http://www.importnew.com/tag/%e9%9d%a2%e8%af%95%e9%a2%98" class="tag-link-27" title="8 个话题" style="font-size: 11.5px;">面试题</a></p></div></div></div><div id="text-18" class="widget widget_text">			<div class="textwidget"><p><a href="http://date.jobbole.com/?utm_source=www.importnew.com&utm_medium=rightBanner-2&utm_content=2015.9.16" target="_blank" class="external" rel="nofollow"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/bfdcef89gw1esk2g5dvq1j208c03cglu.jpg"></a></p>
+</div>
+		</div><div id="recent_comments_widget-2" class="widget recent_comments_widget">		<h3 class="widget-title">最新评论</h3>
+		<ul>
+		
+					
+			<li id="rc-comment-475032" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/7553.html#comment-475032" rel="nofollow">深入理解Java中的final关键字</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				关于final的重要知识点final关键字可以用于成员变量、本地变量、方法以及类。改为：关于fina...								<span class="rc-reviewer"> wudashan</span>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-474310" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16843.html#comment-474310" rel="nofollow">快速高效学习Java编程在线资源Top 20</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				Java并发包学习：http://qifuguang.me/categories/Java%E5%B...									<a class="rc-reviewer external" target="_blank" href="http://qifuguang.me/" rel="nofollow external"> winwill2012</a>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-474257" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16841.html#comment-474257" rel="nofollow">Stackoverflow上人气最旺的10个Java问题</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				5到10之间的\"书\" = =								<span class="rc-reviewer"> codeyung</span>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-473144" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16700.html#comment-473144" rel="nofollow">Java中的常量：如何避免反模式</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				用枚举								<span class="rc-reviewer"> sezi</span>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-472848" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16700.html#comment-472848" rel="nofollow">Java中的常量：如何避免反模式</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				一般常量类里面的常量都是给整个项目用的，如果每个使用到常量的类都继承该接口，我觉得不合理								<span class="rc-reviewer"> 叶子</span>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-471794" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/9679.html#comment-471794" rel="nofollow">如何编写一个高效的Java表达式求值程序</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				内容不错，我在写一个小的Android计算器程序，正好可以用上Parsii这个开源库。									<a class="rc-reviewer external" target="_blank" href="http://geekgeek.org/" rel="nofollow external"> fangying</a>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-471633" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16700.html#comment-471633" rel="nofollow">Java中的常量：如何避免反模式</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				那不实现这个接口不就得了？								<span class="rc-reviewer"> d</span>
+								</div>
+			</li>
+			
+						
+			<li id="rc-comment-471320" class="rc-item rc-comment rc-clearfix">
+				<img class="rc-avatar rc-left" width="32" height="32" alt="" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/cb962c0fddc4ba5282bbf2996f3ee0d2.png">
+				<div class="rc-info">
+				Re:
+				<a class="rc-post" target="_blank" href="http://www.importnew.com/16509.html#comment-471320" rel="nofollow">Java 程序优化：字符串操作、基本运算方法等优化策略</a>
+				</div>
+				<div class="rc-timestamp"></div>
+				<div class="rc-excerpt">
+				替换 switch很好奇楼主是在什么环境下测试的。我用了几乎一模一样的代码测试，其实最后测试下来，是...								<span class="rc-reviewer"> Miles.Mai</span>
+								</div>
+			</li>
+			
+					
+		</ul>
+        </div><div id="text-19" class="widget widget_text">			<div class="textwidget"><p><a href="http://fanyi.jobbole.com/" target="_blank" class="external" rel="nofollow"><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/bfdcef89gw1esnyzyrczej208c03cgm3.jpg"></a></p>
+</div>
+		</div>	
+	<!-- BEGIN .container -->
+	<div class="container">
+	
+		<!-- BEGIN .grid-2 -->
+		<div class="grid-2">
+			
+						
+		</div>
+		<!-- END .grid-2 -->
+		
+		<!-- BEGIN .grid-2 -->
+		<div class="grid-2">
+			
+						
+		</div>
+		<!-- END .grid-2 -->
+		
+		<div class="clear"></div>
+			
+	</div>
+	<!-- END .container -->
+
+</div>
+<!-- END #sidebar -->
+<div class="clear"></div>	
+
+
+</div>
+<!-- END #wrapper -->
+
+<!-- BEGIN footer -->
+<footer>
+
+	<!-- BEGIN .container -->
+	<div class="container">
+		
+		<!-- BEGIN .grid-4 -->
+		<div class="grid-4">
+			
+			<div id="text-15" class="widget widget_text"><h3 class="widget-title">关于ImportNew</h3>			<div class="textwidget"><p>ImportNew 专注于 Java 技术分享。于2012年11月11日 11:11正式上线。是的，这是一个很特别的时刻 :) </p>
+<p>ImportNew 由两个 Java 关键字 import 和 new 组成，意指：Java 开发者学习新知识的网站。 import 可认为是学习和吸收， new 则可认为是新知识、新技术圈子和新朋友……</p>
+<div id="aw_socialcounter_widget-2" class="widget aw_socialcounter_widget">
+<ul>
+<li>
+<a target="_blank" href="http://weibo.com/importnew" class="external" rel="nofollow"><img class="alignleft" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/sina_32.png" alt="关注我们的新浪微博" title="关注我们的新浪微博"></a><p></p>
+<div class="view-rss"><a target="_blank" href="http://www.importnew.com/feed/" class="rss-link"><img class="alignleft" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/rss_32.png" alt="RSS订阅" title="RSS订阅"></a></div>
+</li>
+</ul>
+</div>
+</div>
+		</div>			
+		</div>
+		<!-- END .grid-4 -->
+		
+		<!-- BEGIN .grid-4 -->
+		<div class="grid-4">
+			
+			<div id="text-16" class="widget widget_text"><h3 class="widget-title">推荐关注</h3>			<div class="textwidget"><p><a href="http://group.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">小组</a> – 好的话题、有启发的回复、值得信赖的圈子<br>
+<a href="http://top.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">头条</a> – 写了文章？看干货？去头条！<br>
+<a href="http://date.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">相亲</a> – 为IT单身男女服务的征婚传播平台<br>
+<a href="http://hao.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">资源</a> – 优秀的工具资源导航<br>
+<a href="http://fanyi.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">翻译</a> – 活跃 &amp; 专业的翻译小组<br>
+<a href="http://blog.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">博客</a> – 国内外的精选博客文章<br>
+<a href="http://web.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">前端</a> – JavaScript, HTML5, CSS<br>
+<a href="http://android.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">安卓</a> – 专注Android技术分享<br>
+<a href="http://ios.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">iOS</a> – 专注iOS技术分享<br>
+<a href="http://www.importnew.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank">Java</a> – 专注Java技术分享<br>
+<a href="http://python.jobbole.com/?utm_source=www.importnew.com&utm_medium=bottomText" target="_blank" class="external" rel="nofollow">Python</a> – 专注Python技术分享</p>
+</div>
+		</div>			
+		</div>
+		<!-- END .grid-4 -->
+		
+		<!-- BEGIN .grid-4 -->
+		<div class="grid-4">
+			
+			<div id="text-17" class="widget widget_text"><h3 class="widget-title">联系我们</h3>			<div class="textwidget"><p>Email：<a href="mailto:ImportNew.com@gmail.com">ImportNew.com@gmail.com</a><br>
+新浪微博：<a href="http://weibo.com/importnew" target="_blank" class="external" rel="nofollow">@ImportNew</a><br>
+微信号：importnew </p>
+<p>反馈建议：ImportNew.com@gmail.com<br>
+广告与商务合作QQ：2302462408 </p>
+</div>
+		</div>			
+		</div>
+		<!-- END .grid-4 -->
+		
+		<div class="clear"></div>
+	
+	</div>
+	<!-- END .container -->
+
+	<!-- BEGIN #bottom -->
+	<div id="bottom">
+	
+		<!-- BEGIN .container -->
+		<div class="container">
+		
+			<!-- BEGIN .grid-12 -->
+			<div class="grid-12">
+	
+				<p>© 2015 ImportNew</p>
+			
+			</div>
+			<!-- END .grid-12 -->
+			
+			<div class="clear"></div>
+						
+		</div>
+		<!-- END .container -->
+		
+	</div>
+	<!-- END #bottom -->
+	
+</footer>
+<!-- END footer -->
+
+
+	
+<!-- Lightbox Plus v2.3 - 2011.08.11 - Message: 0-->
+<script type="text/javascript">
+jQuery(document).ready(function($){
+  $("a[rel*=lightbox]").colorbox({opacity:0.8});
+});
+</script>
+
+<!-- WP SyntaxHighlighter Ver.1.7.3 Begin -->
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shCore.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shLegacy.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shAutoloader.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushAppleScript.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushAS3.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushBash.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushColdFusion.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushCpp.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushCSharp.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushCss.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushDelphi.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushDiff.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushErlang.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushGroovy.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushJava.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushJavaFX.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushJScript.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushPerl.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushPhp.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushPlain.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushPowerShell.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushPython.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushRuby.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushSass.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushScala.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushSql.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushVb.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/shBrushXml.js"></script>
+<script type="text/javascript">//<![CDATA[
+	SyntaxHighlighter.autoloader(
+	"applescript	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushAppleScript.js?ver=3.0"
+	,"as3 actionscript3	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushAS3.js?ver=3.0"
+	,"bash shell	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushBash.js?ver=3.0"
+	,"cf coldfusion	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushColdFusion.js?ver=3.0"
+	,"cpp c	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushCpp.js?ver=3.0"
+	,"c# c-sharp csharp	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushCSharp.js?ver=3.0"
+	,"css	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushCss.js?ver=3.0"
+	,"delphi pas pascal	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushDelphi.js?ver=3.0"
+	,"diff patch	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushDiff.js?ver=3.0"
+	,"erl erlang	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushErlang.js?ver=3.0"
+	,"groovy	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushGroovy.js?ver=3.0"
+	,"java	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushJava.js?ver=3.0"
+	,"jfx javafx	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushJavaFX.js?ver=3.0"
+	,"js jscript javascript	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushJScript.js?ver=3.0"
+	,"perl pl	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushPerl.js?ver=3.0"
+	,"php	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushPhp.js?ver=3.0"
+	,"plain text	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushPlain.js?ver=3.0"
+	,"ps powershell	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushPowerShell.js?ver=3.0"
+	,"py python	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushPython.js?ver=3.0"
+	,"rails ror ruby rb	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushRuby.js?ver=3.0"
+	,"sass scss	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushSass.js?ver=3.0"
+	,"scala	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushScala.js?ver=3.0"
+	,"sql	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushSql.js?ver=3.0"
+	,"vb vbnet	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushVb.js?ver=3.0"
+	,"xml xhtml xslt html	http://www.importnew.com/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/scripts/shBrushXml.js?ver=3.0"
+	);
+	SyntaxHighlighter.defaults['auto-links'] = false;
+	SyntaxHighlighter.defaults['quick-code'] = true;
+	SyntaxHighlighter.defaults['title'] = '';
+	SyntaxHighlighter.defaults['class-name'] = 'notranslate';
+	SyntaxHighlighter.defaults['collapse'] = false;
+	SyntaxHighlighter.defaults['first-line'] = 1;
+	SyntaxHighlighter.defaults['gutter'] = true;
+	SyntaxHighlighter.defaults['pad-line-numbers'] = false;
+	SyntaxHighlighter.defaults['smart-tabs'] = true;
+	SyntaxHighlighter.defaults['tab-size'] = 4;
+	SyntaxHighlighter.defaults['toolbar'] = false;
+ SyntaxHighlighter.config.stripBrs = true;
+	SyntaxHighlighter.config.strings.expandSource = '+ expand source';
+	SyntaxHighlighter.config.strings.help = '?';
+	SyntaxHighlighter.config.strings.alert = 'SyntaxHighlighter\n\n';
+	SyntaxHighlighter.config.strings.noBrush = "Can't find brush for: ";
+	SyntaxHighlighter.config.strings.brushNotHtmlScript = "Brush wasn't configured for html-script option: ";
+	SyntaxHighlighter.all();
+	dp.SyntaxHighlighter.HighlightAll('code')
+//]]></script>
+<!-- WP SyntaxHighlighter Ver.1.7.3 End -->
+<link rel="stylesheet" id="wp_rp_scrollup-css" href="http://dtmvdvtzf8rz0.cloudfront.net/static/css-img/scrollup.css?ver=3.4.2" type="text/css" media="all">
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/ck-karma.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jquery.colorbox-min.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var viewsCacheL10n = {"admin_ajax_url":"http:\/\/www.importnew.com\/wp-admin\/admin-ajax.php","post_id":"16325"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/postviews-cache.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/ready.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/easing.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/superfish.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/validate.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/touchwipe.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/caroufredsel.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/flexslider.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/jplayer.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/fitvids.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/selectnav.js"></script>
+<script type="text/javascript" src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/effects.js"></script>
+<script type="text/javascript" src="http://dtmvdvtzf8rz0.cloudfront.net/static/js/scrollup.js?ver=3.4.2"></script>
+
+
+<div id="full-btm" style="position:fixed; left:50%; top:550px;  z-index:100; text-align:center; cursor:pointer;">
+<a><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/back-btm.png" width="20" border="0" alt="跳到底部" title="跳到底部"></a>
+</div>
+
+<script type="text/javascript">
+jQuery('#full-btm').click(function(){
+    jQuery('html, body').animate({scrollTop:jQuery(document).height()}, 'slow');
+    return false;
+});
+</script>
+
+<div id="full-top" style="position:fixed; left:50%; top:520px; margin-left:495px; z-index:100; text-align:center; cursor:pointer;">
+<a><img src="./JVM 垃圾回收器工作原理及使用实例介绍 - ImportNew_files/back-top.png" width="20" border="0" alt="返回顶部" title="返回顶部"></a>
+</div>
+
+<script type="text/javascript">
+jQuery('#full-top').click(function(){
+    jQuery('html, body').animate({scrollTop:0}, 'slow');
+    return false;
+});
+</script>
+
+<!-- script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','/_assets/js/analytics.js','ga');
+
+    ga('create', 'UA-15621043-1', 'jobbole.com');
+    ga('send', 'pageview');
+
+</script -->
+
+
+<!-- END body -->
+
+
+<!-- END html --><!-- WP Super Cache is installed but broken. The constant WPCACHEHOME must be set in the file wp-config.php and point at the WP Super Cache plugin directory. --><div id="cboxOverlay" style="display: none;"></div><div id="colorbox" class="" style="padding-bottom: 50px; padding-right: 50px; display: none;"><div id="cboxWrapper"><div><div id="cboxTopLeft" style="float: left;"></div><div id="cboxTopCenter" style="float: left;"></div><div id="cboxTopRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxMiddleLeft" style="float: left;"></div><div id="cboxContent" style="float: left;"><div id="cboxLoadedContent" style="width: 0px; height: 0px; overflow: hidden; float: left;"></div><div id="cboxLoadingOverlay" style="float: left;"></div><div id="cboxLoadingGraphic" style="float: left;"></div><div id="cboxTitle" style="float: left;"></div><div id="cboxCurrent" style="float: left;"></div><div id="cboxNext" style="float: left;"></div><div id="cboxPrevious" style="float: left;"></div><div id="cboxSlideshow" style="float: left;"></div><div id="cboxClose" style="float: left;"></div></div><div id="cboxMiddleRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxBottomLeft" style="float: left;"></div><div id="cboxBottomCenter" style="float: left;"></div><div id="cboxBottomRight" style="float: left;"></div></div></div><div style="position: absolute; width: 9999px; visibility: hidden; display: none;"></div></div></body></html>
